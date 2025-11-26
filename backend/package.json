@@ -6,14 +6,17 @@
 	"type": "module",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts"
-		
+		"dev": "nodemon --exec \"node --loader ts-node/esm\" src/server.ts",
+		"format": "biome format --write",
+		"lint": "biome lint --write",
+		"check": "biome check --write"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"packageManager": "pnpm@10.12.1",
 	"dependencies": {
+		"@prisma/client": "^7.0.1",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0"
 	},
@@ -22,6 +25,7 @@
 		"@types/express": "^5.0.5",
 		"@types/node": "^24.10.1",
 		"nodemon": "^3.1.11",
+		"prisma": "^7.0.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3"
 	}
