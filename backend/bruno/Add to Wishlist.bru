@@ -6,6 +6,23 @@ meta {
 
 post {
   url: http://localhost:8080/api/wishlist
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "status": "PLAN_TO_WATCH",
+    "rating": 0,
+    "media_item": {
+      "title": "The Godfather",
+      "type": "MOVIE",
+      "api_source": "TMDB",
+      "api_id": "238", 
+      "metadata": {
+        "year": 1972,
+        "director": "Francis Ford Coppola"
+      }
+    }
+  }
 }

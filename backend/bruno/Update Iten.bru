@@ -5,7 +5,17 @@ meta {
 }
 
 patch {
-  url: http://localhost:8080/api/items/1
-  body: none
+  url: http://localhost:8080/api/items/13
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "title": "Attack on Titan: Final Season",
+    "metadata": {
+      "studio": "MAPPA",
+      "year": 2023
+    }
+  }
 }
