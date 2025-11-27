@@ -5,11 +5,11 @@ import type { PrismaConfig } from "prisma";
 import { env } from "prisma/config";
 
 export default {
-  schema: 'prisma/schema.prisma',
-  migrations: {
-    path: 'prisma/migrations',
-  },
-  datasource: {
-    url: env('DIRECT_URL'),
-  },
+	schema: "prisma/schema.prisma",
+	migrations: {
+		path: "prisma/migrations",
+	},
+	datasource: {
+		url: env("DIRECT_URL"),
+	},
 } satisfies PrismaConfig;

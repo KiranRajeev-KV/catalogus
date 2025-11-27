@@ -13,9 +13,84 @@ datasource db {
   provider  = "postgresql"
 }
 
-model Movie {
-  id  Int   @id @default(autoincrement())
-  name String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model MediaItem {
+  item_id    Int       @id @default(autoincrement())
+  title      String
+  type       Type
+  api_source ApiSource
+  api_id     String
+  metadata   Json?     @default("{}")
+  
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  // RELATIONS: Needed to do: media_item. wishlist_entries
+  wishlist_entries Wishlist[]
+
+  // Ensure no duplicate entries for same item from same source
+  @@unique([api_source, api_id])
+
+  @@map("media_items")
+}
+
+model User {
+  user_id    String   @id @default(cuid())
+  username   String   @unique
+  email      String   @unique
+  password   String
+  
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // RELATIONS: Needed to do: user.wishlist
+  wishlist Wishlist[]
+
+  @@map("users")
+}
+
+model Wishlist {
+  wishlist_id   String    @id @default(cuid())
+  
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  
+  media_item_id Int
+  media_item    MediaItem @relation(fields: [media_item_id], references: [item_id], onDelete: Cascade)
+
+  status        Status
+  rating        Decimal?  @default(0)
+  completed_at  DateTime? 
+  comments      String?
+  
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@unique([user_id, media_item_id])
+  
+  // Index to get all wishlist items for a user with a specific status
+  @@index([user_id, status])
+  
+  @@map("wishlist")
+}
+
+enum Type {
+  MOVIE
+  TV
+  ANIME
+  DRAMA
+}
+
+enum ApiSource {
+  TMDB
+  TVDB
+  ANILIST
+  MDL
+}
+
+enum Status {
+  WATCHING
+  COMPLETED
+  ON_HOLD
+  DROPPED
+  PLAN_TO_WATCH
 }
