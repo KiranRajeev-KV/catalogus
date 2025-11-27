@@ -1,0 +1,11 @@
+meta {
+  name: Remove from Wishlist
+  type: http
+  seq: 8
+}
+
+delete {
+  url: http://localhost:8080/api/wishlist/YOUR_WISHLIST_ID
+  body: none
+  auth: inherit
+}
