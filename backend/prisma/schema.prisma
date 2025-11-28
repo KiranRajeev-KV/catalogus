@@ -10,66 +10,61 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 model MediaItem {
-  item_id    Int       @id @default(autoincrement())
+  itemId    Int       @id @default(autoincrement())
   title      String
   type       Type
-  api_source ApiSource
-  api_id     String
+  apiSource ApiSource
+  apiId     String
   metadata   Json?     @default("{}")
-  
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   // RELATIONS: Needed to do: media_item. wishlist_entries
   wishlist_entries Wishlist[]
 
   // Ensure no duplicate entries for same item from same source
-  @@unique([api_source, api_id])
-
+  @@unique([apiSource, apiId])
   @@map("media_items")
 }
 
 model User {
-  user_id    String   @id @default(cuid())
-  username   String   @unique
-  email      String   @unique
-  password   String
-  
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String    
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?  
+  createdAt     DateTime @default(now()) 
+  updatedAt     DateTime @updatedAt 
 
   // RELATIONS: Needed to do: user.wishlist
   wishlist Wishlist[]
+
+  sessions Session[]
+  accounts Account[]
 
   @@map("users")
 }
 
 model Wishlist {
-  wishlist_id   String    @id @default(cuid())
-  
-  user_id       String
-  user          User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  
-  media_item_id Int
-  media_item    MediaItem @relation(fields: [media_item_id], references: [item_id], onDelete: Cascade)
+  wishlistId   String    @id @default(cuid())
+  userId       String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaItemId Int
+  mediaItem    MediaItem @relation(fields: [mediaItemId], references: [itemId], onDelete: Cascade)
+  status       Status
+  rating       Decimal?  @default(0)
+  completedAt DateTime?
+  comments     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  status        Status
-  rating        Decimal?  @default(0)
-  completed_at  DateTime? 
-  comments      String?
-  
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-
-  @@unique([user_id, media_item_id])
-  
   // Index to get all wishlist items for a user with a specific status
-  @@index([user_id, status])
-  
+  @@unique([userId, mediaItemId])
+  @@index([userId, status])
   @@map("wishlist")
 }
 
@@ -93,4 +88,52 @@ enum Status {
   ON_HOLD
   DROPPED
   PLAN_TO_WATCH
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
