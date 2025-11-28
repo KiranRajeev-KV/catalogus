@@ -1,0 +1,19 @@
+meta {
+  name: signup
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:8080/api/auth/sign-up/email
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "test@test.com",
+    "password": "password123",
+    "name": "Tester"
+  }
+}

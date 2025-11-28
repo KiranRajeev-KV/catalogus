@@ -1,0 +1,22 @@
+meta {
+  name: login
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:8080/api/auth/sign-in/email
+  body: json
+  auth: inherit
+}
+
+headers {
+  Origin: http://localhost:8080
+}
+
+body:json {
+  {
+    "email": "test@test.com",
+    "password": "password123"
+  }
+}
