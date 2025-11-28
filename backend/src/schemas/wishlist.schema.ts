@@ -30,11 +30,11 @@ export const AddToWishlistSchema = z.object({
 	// Default status is PLAN_TO_WATCH
 	status: z.nativeEnum(Status).default(Status.PLAN_TO_WATCH),
 	rating: z.number().min(0).max(10).default(0),
-	media_item: z.object({
+	mediaItem: z.object({
 		title: z.string().min(1, "Title is required"),
 		type: z.nativeEnum(Type),
-		api_source: z.nativeEnum(ApiSource),
-		api_id: z.string().min(1, "API ID is required"),
+		apiSource: z.nativeEnum(ApiSource),
+		apiId: z.string().min(1, "API ID is required"),
 		// Allow any JSON object for metadata
 		metadata: z.record(z.string(), z.any()).optional().default({}),
 	}),

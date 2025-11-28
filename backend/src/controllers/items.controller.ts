@@ -1,12 +1,12 @@
 // src/controllers/items.controller.ts
 import type { Request, Response } from "express";
+import z from "zod";
 import { prisma } from "../db/client.js";
 import {
-	SearchItemsSchema,
 	ItemParamsSchema,
+	SearchItemsSchema,
 	UpdateMediaItemSchema,
 } from "../schemas/items.schema.js";
-import z from "zod";
 
 // Search internal DB for items
 export const searchItems = async (req: Request, res: Response) => {
@@ -49,7 +49,7 @@ export const getItemDetails = async (req: Request, res: Response) => {
 
 	try {
 		const item = await prisma.mediaItem.findUnique({
-			where: { item_id: id },
+			where: { itemId: id },
 		});
 
 		if (!item) return res.status(404).json({ error: "Item not found" });
@@ -90,7 +90,7 @@ export const updateItem = async (req: Request, res: Response) => {
 
 	try {
 		const item = await prisma.mediaItem.update({
-			where: { item_id: id },
+			where: { itemId: id },
 			data: prismaUpdates,
 		});
 

@@ -6,8 +6,12 @@ import {
 	removeFromWishlist,
 	updateWishlistEntry,
 } from "../controllers/wishlist.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 const router: Router = Router();
+
+// make all routes below require authentication
+router.use(requireAuth);
 
 // /api/wishlist
 router.get("/", getWishlist); // Get wishlist items

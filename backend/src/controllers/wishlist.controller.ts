@@ -1,17 +1,16 @@
 // src/controllers/wishlist.controller.ts
 import type { Request, Response } from "express";
+import z from "zod";
 import { prisma } from "../db/client.js";
 import {
 	AddToWishlistSchema,
 	GetWishlistSchema,
 	UpdateWishlistSchema,
 } from "../schemas/wishlist.schema.js";
-import z from "zod";
 
 export const getWishlist = async (req: Request, res: Response) => {
-	// Assuming you have middleware that adds user to req
-	// const userId = req.user.id;
-	const userId = "user_123_placeholder";
+	const user = (req as any).user;
+	const userId = user.id;
 
 	const result = GetWishlistSchema.safeParse(req.query);
 	if (!result.success) {
@@ -32,20 +31,20 @@ export const getWishlist = async (req: Request, res: Response) => {
 		score_high: { rating: "desc" },
 		score_low: { rating: "asc" },
 		// Sorting by the Relation (Joined Table)
-		title_az: { media_item: { title: "asc" } },
-		title_za: { media_item: { title: "desc" } },
+		title_az: { mediaItem: { title: "asc" } },
+		title_za: { mediaItem: { title: "desc" } },
 	};
 
 	const orderBy = sortMapping[sort] || { updated_at: "desc" };
 
 	// filter object to be used as WHERE clause
 	const whereClause = {
-		user_id: userId,
+		userId: userId,
 		// If status is provided, add it to the filter
 		...(status && { status }),
 		// If type is provided, filter inside the RELATION
 		...(type && {
-			media_item: {
+			mediaItem: {
 				type: type,
 			},
 		}),
@@ -56,14 +55,14 @@ export const getWishlist = async (req: Request, res: Response) => {
 		// query 1: Get the actual data
 		const wishlist = await prisma.wishlist.findMany({
 			where: {
-				user_id: userId,
+				userId: userId,
 				...(status && { status }),
-				...(type && { media_item: { type } }),
+				...(type && { mediaItem: { type } }),
 			},
 			take: limit,
 			skip: skip,
 			orderBy: orderBy,
-			include: { media_item: true },
+			include: { mediaItem: true },
 		});
 
 		// query 2: Get total count (for frontend pagination UI)
@@ -87,7 +86,9 @@ export const getWishlist = async (req: Request, res: Response) => {
 };
 
 export const addToWishlist = async (req: Request, res: Response) => {
-	const userId = "user_123_placeholder";
+	const user = (req as any).user;
+	const userId = user.id;
+
 	const result = AddToWishlistSchema.safeParse(req.body);
 
 	if (!result.success) {
@@ -97,33 +98,33 @@ export const addToWishlist = async (req: Request, res: Response) => {
 		});
 	}
 
-	const { status, rating, media_item } = result.data;
+	const { status, rating, mediaItem } = result.data;
 
 	try {
 		const entry = await prisma.wishlist.create({
 			data: {
-				user: { connect: { user_id: userId } },
+				user: { connect: { id: userId } },
 				status: status || "PLAN_TO_WATCH",
 				rating: rating,
-				media_item: {
+				mediaItem: {
 					connectOrCreate: {
 						where: {
-							api_source_api_id: {
-								api_source: media_item.api_source,
-								api_id: media_item.api_id,
+							apiSource_apiId: {
+								apiSource: mediaItem.apiSource,
+								apiId: mediaItem.apiId,
 							},
 						},
 						create: {
-							title: media_item.title,
-							type: media_item.type,
-							api_source: media_item.api_source,
-							api_id: media_item.api_id,
-							metadata: media_item.metadata || {},
+							title: mediaItem.title,
+							type: mediaItem.type,
+							apiSource: mediaItem.apiSource,
+							apiId: mediaItem.apiId,
+							metadata: mediaItem.metadata || {},
 						},
 					},
 				},
 			},
-			include: { media_item: true },
+			include: { mediaItem: true },
 		});
 
 		res.status(201).json(entry);
@@ -150,7 +151,7 @@ export const updateWishlistEntry = async (req: Request, res: Response) => {
 
 	try {
 		const updated = await prisma.wishlist.update({
-			where: { wishlist_id: id },
+			where: { wishlistId: id },
 			data: result.data,
 		});
 
@@ -170,7 +171,7 @@ export const removeFromWishlist = async (req: Request, res: Response) => {
 
 	try {
 		await prisma.wishlist.delete({
-			where: { wishlist_id: id },
+			where: { wishlistId: id },
 		});
 		res.status(204).send();
 	} catch (error: any) {

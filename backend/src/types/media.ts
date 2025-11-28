@@ -6,8 +6,8 @@ export interface AddToWishlistDto {
 	media_item: {
 		title: string;
 		type: Type;
-		api_source: ApiSource;
-		api_id: string;
+		apiSource: ApiSource;
+		apiId: string;
 		metadata?: object;
 	};
 }
