@@ -26,8 +26,8 @@ export const getWishlist = async (req: Request, res: Response) => {
 	const skip = (page - 1) * limit;
 
 	const sortMapping: Record<string, any> = {
-		latest: { updated_at: "desc" },
-		oldest: { updated_at: "asc" },
+		latest: { updatedAt: "desc" },
+		oldest: { updatedAt: "asc" },
 		score_high: { rating: "desc" },
 		score_low: { rating: "asc" },
 		// Sorting by the Relation (Joined Table)
@@ -35,7 +35,7 @@ export const getWishlist = async (req: Request, res: Response) => {
 		title_za: { mediaItem: { title: "desc" } },
 	};
 
-	const orderBy = sortMapping[sort] || { updated_at: "desc" };
+	const orderBy = sortMapping[sort] || { updatedAt: "desc" };
 
 	// filter object to be used as WHERE clause
 	const whereClause = {
