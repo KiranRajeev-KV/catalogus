@@ -2,13 +2,16 @@
 import type { Request, Response } from "express";
 import z from "zod";
 import { prisma } from "../db/client.js";
+import type { Type } from "../generated/prisma/enums.js";
 import {
 	ItemParamsSchema,
 	SearchItemsSchema,
 	UpdateMediaItemSchema,
 } from "../schemas/items.schema.js";
+import { searchTMDB } from "../services/tmdb.service.js";
+import type { AddMediaItemDto } from "../types/media.js";
 
-// Search internal DB for items
+// Search internal DB and external APIs for items
 export const searchItems = async (req: Request, res: Response) => {
 	const result = SearchItemsSchema.safeParse(req.query);
 
@@ -17,7 +20,7 @@ export const searchItems = async (req: Request, res: Response) => {
 		return res.json([]);
 	}
 
-	const { q } = result.data;
+	const { type, q } = result.data;
 	if (!q) return res.json([]);
 
 	try {
@@ -27,10 +30,39 @@ export const searchItems = async (req: Request, res: Response) => {
 					contains: q,
 					mode: "insensitive",
 				},
+				...(type && { type }),
 			},
 			take: 10,
 		});
-		res.json(items);
+
+		// search external APIs if needed
+		let externalSearch: AddMediaItemDto[] = [];
+		switch (type as Type) {
+			case "MOVIE":
+				externalSearch = await searchTMDB(q);
+				break;
+			case "TV":
+				//const externalSearchTV = await searchTVDB(q);
+				break;
+			case "ANIME":
+				// const externalSearchAnime = await searchAnilist(q);
+				break;
+			case "DRAMA":
+				// const externalSearchDrama = await searchMDL(q);
+				break;
+			default:
+				break;
+		}
+
+		// removing duplicates based on apiId of items and apiId of externalSearch
+		const existingApiIds = new Set(items.map((item) => item.apiId));
+		const filteredExternalSearch = externalSearch.filter(
+			(item) => !existingApiIds.has(item.apiId),
+		);
+
+		// combine internal and external results
+		const combinedResults = [...items, ...filteredExternalSearch];
+		res.json(combinedResults);
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Search failed" });

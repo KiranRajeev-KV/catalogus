@@ -1,6 +1,13 @@
 // src/types/media.ts
 import type { ApiSource, Status, Type } from "../generated/prisma/client.js";
 
+export interface AddMediaItemDto {
+	title: string;
+	type: Type;
+	apiSource: ApiSource;
+	apiId: string;
+	metadata?: object;
+}
 export interface AddToWishlistDto {
 	status: Status;
 	media_item: {
