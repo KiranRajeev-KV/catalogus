@@ -4,12 +4,35 @@ import z from "zod";
 import { prisma } from "../db/client.js";
 import type { Type } from "../generated/prisma/enums.js";
 import {
+	AddItemSchemea,
 	ItemParamsSchema,
 	SearchItemsSchema,
 	UpdateMediaItemSchema,
 } from "../schemas/items.schema.js";
 import { searchTMDB } from "../services/tmdb.service.js";
 import type { AddMediaItemDto } from "../types/media.js";
+
+export const addItem = async (req: Request, res: Response) => {
+	const body = AddItemSchemea.safeParse(req.body);
+	if (!body.success) {
+		return res.status(400).json({
+			error: "Invalid item data",
+			details: z.treeifyError(body.error),
+		});
+	}
+
+	const newItemData = body.data;
+
+	try {
+		const newItem = await prisma.mediaItem.create({
+			data: newItemData,
+		});
+		res.status(201).json(newItem);
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Failed to add item" });
+	}
+};
 
 // Search internal DB and external APIs for items
 export const searchItems = async (req: Request, res: Response) => {
