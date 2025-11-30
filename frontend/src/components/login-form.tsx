@@ -31,7 +31,7 @@ export function LoginForm({
 				email,
 				password,
 				rememberMe: true,
-				callbackURL: "/dashboard",
+				callbackURL: "/watchlist",
 			},
 			{
 				onError: (ctx) => {

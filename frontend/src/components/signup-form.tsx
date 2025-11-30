@@ -39,7 +39,7 @@ export function SignupForm({
 		setIsLoading(true);
 		// biome-ignore lint/correctness/noUnusedVariables: just not used
 		const { data, error } = await authClient.signUp.email(
-			{ email, password, name, callbackURL: "/dashboard" },
+			{ email, password, name, callbackURL: "/watchlist" },
 			{
 				onError: (ctx) => {
 					toast.error(`Error: ${ctx.error.message}`);
