@@ -21,6 +21,12 @@ export async function searchTMDB(query: string) {
 		},
 	});
 
+	// sort searchResults by popularity descending
+	searchResults.data.results.sort(
+		(a: TMDBMovie, b: TMDBMovie) => b.popularity - a.popularity,
+	);
+
+	// map searchResults to structured format
 	const structuredResults = searchResults.data.results.map(
 		(item: TMDBMovie) => ({
 			title: item.title,
