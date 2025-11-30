@@ -1,6 +1,6 @@
 # Catalogus Backend
 
-Backend API for Catalogus built with Express.js, TypeScript, and Prisma ORM.
+Backend API for Catalogus - a media tracking application built with Express.js, TypeScript, and Prisma ORM.
 
 ## Prerequisites
 
@@ -15,8 +15,9 @@ Backend API for Catalogus built with Express.js, TypeScript, and Prisma ORM.
 - **Language**: TypeScript
 - **ORM**: Prisma 7.x with PostgreSQL adapter
 - **Database**: PostgreSQL
+- **Authentication**: Better Auth 1.4.x
 - **Validation**: Zod 4.x
-- **Linter/Formatter**: Biome
+- **Linter/Formatter**: Biome 2.3.x
 - **Package Manager**: pnpm
 
 ## Project Structure
@@ -27,15 +28,18 @@ backend/
 │   ├── controllers/     # Request handlers and business logic
 │   ├── routes/          # API route definitions
 │   ├── schemas/         # Zod validation schemas
+│   ├── services/        # Business logic and external API integrations
+│   ├── middleware/      # Custom Express middleware
 │   ├── db/              # Database configuration
+│   ├── lib/             # Utility functions and helpers
 │   ├── types/           # TypeScript type definitions
-│   ├── generated/       # Auto-generated files
+│   ├── generated/       # Auto-generated files (Prisma client)
 │   └── server.ts        # Application entry point
 ├── prisma/
 │   ├── schema.prisma    # Database schema
 │   ├── migrations/      # Database migration files
 │   └── seed.ts          # Database seeding script
-└── bruno/               # API testing collection
+└── bruno/               # API testing collection (Bruno REST client)
 ```
 
 ## Getting Started
@@ -60,12 +64,18 @@ Update the `.env` file with your configuration:
 PORT=8080
 DATABASE_URL=<your_database_url_here>
 DIRECT_URL=<your_direct_database_url_here>
+BETTER_AUTH_SECRET=<your_secret_key_here>
+BETTER_AUTH_URL=http://localhost:8080
+TMDB_API_KEY=<your_tmdb_api_key_here>
 ```
 
 **Environment Variables:**
 - `PORT`: Server port (default: 8080)
 - `DATABASE_URL`: PostgreSQL connection string for Prisma (pooled connection)
 - `DIRECT_URL`: Direct database connection URL (used for migrations and introspection)
+- `BETTER_AUTH_SECRET`: Secret key for Better Auth authentication
+- `BETTER_AUTH_URL`: Base URL for authentication callbacks
+- `TMDB_API_KEY`: API key for The Movie Database (TMDB) API
 
 ### 3. Database Setup
 
@@ -78,7 +88,7 @@ pnpm dlx prisma migrate dev
 This will:
 - Create the database if it doesn't exist
 - Run pending migrations
-- Generate Prisma Client
+- Generate Prisma Client in `src/generated/prisma`
 
 Optionally, seed the database with initial data:
 
