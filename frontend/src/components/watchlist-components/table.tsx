@@ -1,7 +1,7 @@
 // watchlist table component
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { ApiSource, Type } from "@/types/mediaItem";
+import { ApiSource, MediaType } from "@/types/mediaItem";
 import { WatchlistItem } from "@/types/watchlistItem";
 import { parse } from "date-fns";
 
@@ -13,7 +13,7 @@ function mapToEnums(item: any): WatchlistItem {
 		comments: item.comments || undefined,
 		mediaItem: {
 			...item.mediaItem,
-			type: item.mediaItem.type as Type,
+			type: item.mediaItem.type as MediaType,
 			apiSource: item.mediaItem.apiSource as ApiSource,
 			metadata: {
 				...item.mediaItem.metadata,

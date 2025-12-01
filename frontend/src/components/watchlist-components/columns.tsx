@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import type { WatchlistItem } from "@/types/watchlistItem";
 import { format } from "date-fns";
 import { Star } from "lucide-react";
-import { Status } from "@/types/mediaItem";
+import { WatchlistStatus } from "@/types/watchlistItem";
 
 export const columns: ColumnDef<WatchlistItem>[] = [
 	{
@@ -52,7 +52,7 @@ export const columns: ColumnDef<WatchlistItem>[] = [
 		id: "status",
 		header: "Status",
 		cell: ({ row }) => {
-			const status = row.original.status as Status;
+			const status = row.original.status as WatchlistStatus;
 			console.log("Rendering status:", status);
 			return (
 				<span className="font-medium">

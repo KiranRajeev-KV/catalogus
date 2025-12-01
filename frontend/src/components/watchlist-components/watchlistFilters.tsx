@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "../ui/button";
 import useFilters from "@/stores/filters";
+import { MediaType } from "@/types/mediaItem";
 
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);
@@ -58,11 +59,8 @@ export function WatchlistFilters() {
 		<div className="flex flex-row justify-between mb-3 py-2">
 			<div className="flex flex-row space-x-2 items-center">
 				{/* Add to watchlist button */}
-				<Button
-					variant="outline"
-					className="bg-primary rounded-lg shadow-xs w-24 hover:bg-foreground hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150"
-				>
-					<Plus className="size-6 text-primary-foreground " />
+				<Button className="bg-primary rounded-lg shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
+					<Plus className="size-6 text-primary-foreground" />
 				</Button>
 
 				{/* Search Bar */}
@@ -102,12 +100,18 @@ export function WatchlistFilters() {
 					defaultValue="ALL"
 					className="border gap-0 max-h-9 shadow-xs border-input"
 				>
-					{["All", "Movie", "Tv", "Anime", "Drama"].map((type) => (
+					{["Movie", "TV", "Anime", "Drama"].map((type) => (
 						<ToggleGroupItem
 							key={type}
 							value={type}
-							className={`px-3 text-base ${type !== "ALL" ? "border-l" : ""}`}
-							onClick={() => filters.setTypeFilter(type === "ALL" ? "" : type)}
+							className={`w-18 px-3 text-base ${type !== "ALL" ? "border-l" : ""}`}
+							onClick={() =>
+								filters.setTypeFilter(
+									filters.typeFilter === type.toUpperCase()
+										? ""
+										: (type.toUpperCase() as MediaType),
+								)
+							}
 						>
 							{type}
 						</ToggleGroupItem>
@@ -115,11 +119,11 @@ export function WatchlistFilters() {
 				</ToggleGroup>
 
 				{/* Status Dropdown */}
-				<Select onValueChange={
-					(status) => filters.setStatusFilter(
-						status === "ALL" ? "" : (status)
-					)
-				}>
+				<Select
+					onValueChange={(status) =>
+						filters.setStatusFilter(status === "ALL" ? "" : status)
+					}
+				>
 					<SelectTrigger className="w-[180px] text-base rounded-lg text-foreground">
 						<SelectValue placeholder="Status" />
 					</SelectTrigger>
@@ -134,11 +138,7 @@ export function WatchlistFilters() {
 								"ON_HOLD",
 								"DROPPED",
 							].map((status) => (
-								<SelectItem
-									key={status}
-									value={status}
-									className="text-base"
-								>
+								<SelectItem key={status} value={status} className="text-base">
 									{status
 										.split("_")
 										.map((word) => word.charAt(0) + word.slice(1).toLowerCase())
@@ -157,9 +157,26 @@ export function WatchlistFilters() {
 					<SelectContent className="text-base">
 						<SelectGroup>
 							<SelectLabel>Sort By</SelectLabel>
-							{["latest", "oldest", "score_high", "score_low", "title_az", "title_za"].map((option) => (
+							{[
+								"latest",
+								"oldest",
+								"score_high",
+								"score_low",
+								"title_az",
+								"title_za",
+							].map((option) => (
 								<SelectItem key={option} value={option} className="text-base">
-									{option === "latest" ? "Latest" : option === "oldest" ? "Oldest" : option === "score_high" ? "Highest Score" : option === "score_low" ? "Lowest Score" : option === "title_az" ? "Title (A-Z)" : "Title (Z-A)"}
+									{option === "latest"
+										? "Latest"
+										: option === "oldest"
+											? "Oldest"
+											: option === "score_high"
+												? "Highest Score"
+												: option === "score_low"
+													? "Lowest Score"
+													: option === "title_az"
+														? "Title (A-Z)"
+														: "Title (Z-A)"}
 								</SelectItem>
 							))}
 						</SelectGroup>

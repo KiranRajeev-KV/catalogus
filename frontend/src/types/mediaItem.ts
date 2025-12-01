@@ -1,9 +1,12 @@
+export type MediaType = "MOVIE" | "TV" | "ANIME" | "DRAMA";
+export type ApiSource = "TMDB" | "TVDB" | "ANILIST" | "MDL";
+
 export interface MediaItem {
 	itemId: number;
 	title: string;
-	apiSource: "TMDB" | "TVDB" | "ANILIST" | "MDL";
+	apiSource: ApiSource;
 	apiId: string;
-	type: "MOVIE" | "TV" | "ANIME" | "DRAMA";
+	type: MediaType;
 	metadata: {
 		adult?: boolean;
 		backdrop_path?: string;

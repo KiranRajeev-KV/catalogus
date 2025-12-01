@@ -1,13 +1,9 @@
+import { MediaType } from "@/types/mediaItem";
+import { WatchlistStatus } from "@/types/watchlistItem";
 import { create } from "zustand";
 
-type TypeFilter = "" | "MOVIE" | "TV" | "ANIME" | "DRAMA";
-type StatusFilter =
-	| ""
-	| "PLAN_TO_WATCH"
-	| "WATCHING"
-	| "COMPLETED"
-	| "ON_HOLD"
-	| "DROPPED";
+type TypeFilter = "" | MediaType;
+type StatusFilter = "" | WatchlistStatus;
 type SortBy =
 	| "latest"
 	| "oldest"
@@ -31,25 +27,25 @@ interface FiltersState {
 }
 
 const useFilters = create<FiltersState>((set) => ({
-  searchQuery: "",
-  setSearchQuery: (query) => {
-    set({ searchQuery: query });
-  },
+	searchQuery: "",
+	setSearchQuery: (query) => {
+		set({ searchQuery: query });
+	},
 
-  typeFilter: "",
-  setTypeFilter: (type) => {
-    set({ typeFilter: type });
-  },
+	typeFilter: "",
+	setTypeFilter: (type) => {
+		set({ typeFilter: type });
+	},
 
-  statusFilter: "",
-  setStatusFilter: (status) => {
-    set({ statusFilter: status });
-  },
+	statusFilter: "",
+	setStatusFilter: (status) => {
+		set({ statusFilter: status });
+	},
 
-  sortBy: "latest",
-  setSortBy: (sortBy) => {
-    set({ sortBy });
-  },
+	sortBy: "latest",
+	setSortBy: (sortBy) => {
+		set({ sortBy });
+	},
 }));
 
 export default useFilters;
