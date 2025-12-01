@@ -1,7 +1,5 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { authClient } from "@/lib/auth-client";
+import { createFileRoute } from "@tanstack/react-router";
 import { MyNavbar } from "@/components/navbar";
-import { WatchlistTable } from "@/components/watchlist-components/table";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
 import { WatchlistItem } from "@/types/watchlistItem";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
@@ -129,7 +127,75 @@ const tempWatchlistData: WatchlistItem[] = [
 		userId: "MupawCBm3NrnG9FI5HdkmjhcSiNjcHdo",
 		mediaItemId: 2,
 		status: "PLAN_TO_WATCH",
-		rating: "0",
+		rating: 0,
+		completedAt: null,
+		comments: null,
+		createdAt: "2025-12-01T04:55:57.667Z",
+		updatedAt: "2025-12-01T04:55:57.667Z",
+		mediaItem: {
+			itemId: 2,
+			title: "ATTACK ON TITAN",
+			type: "ANIME",
+			apiSource: "ANILIST",
+			apiId: "100",
+			metadata: {
+				adult: false,
+				video: false,
+				overview: "EREN YEAGER",
+				genre_ids: [18, 10749],
+				popularity: 29.5103,
+				vote_count: 26503,
+				poster_path: "/wgwldDDlTDDMrluOMkpSA8lyKjv.jpg",
+				release_date: "205-12-12",
+				vote_average: 7.903,
+				backdrop_path: "/xnHVX37XZEp33hhCbYlQFq7ux1J.jpg",
+				original_title: "ATTACK ON TITAN",
+				original_language: "en",
+			},
+			createdAt: "2025-12-01T04:55:57.667Z",
+			updatedAt: "2025-12-01T04:55:57.667Z",
+		},
+	},
+	{
+		wishlistId: "cmimoez9700002sumpo5tzj2r",
+		userId: "MupawCBm3NrnG9FI5HdkmjhcSiNjcHdo",
+		mediaItemId: 2,
+		status: "PLAN_TO_WATCH",
+		rating: 0,
+		completedAt: null,
+		comments: null,
+		createdAt: "2025-12-01T04:55:57.667Z",
+		updatedAt: "2025-12-01T04:55:57.667Z",
+		mediaItem: {
+			itemId: 2,
+			title: "ATTACK ON TITAN",
+			type: "ANIME",
+			apiSource: "ANILIST",
+			apiId: "100",
+			metadata: {
+				adult: false,
+				video: false,
+				overview: "EREN YEAGER",
+				genre_ids: [18, 10749],
+				popularity: 29.5103,
+				vote_count: 26503,
+				poster_path: "/wgwldDDlTDDMrluOMkpSA8lyKjv.jpg",
+				release_date: "205-12-12",
+				vote_average: 7.903,
+				backdrop_path: "/xnHVX37XZEp33hhCbYlQFq7ux1J.jpg",
+				original_title: "ATTACK ON TITAN",
+				original_language: "en",
+			},
+			createdAt: "2025-12-01T04:55:57.667Z",
+			updatedAt: "2025-12-01T04:55:57.667Z",
+		},
+	},
+	{
+		wishlistId: "cmimoez9700002sumpo5tzj2r",
+		userId: "MupawCBm3NrnG9FI5HdkmjhcSiNjcHdo",
+		mediaItemId: 2,
+		status: "PLAN_TO_WATCH",
+		rating: 0,
 		completedAt: null,
 		comments: null,
 		createdAt: "2025-12-01T04:55:57.667Z",
@@ -168,13 +234,7 @@ function Watchlist() {
 			<MyNavbar />
 			<div className="container mx-auto my-8 max-w-[75%]">
 				<h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
-				<WatchlistFilters
-					onTypeChange={(type: string) => console.log("Type changed to:", type)}
-					onStatusChange={(status: string) =>
-						console.log("Status changed to:", status)
-					}
-					onSortChange={(sort: string) => console.log("Sort changed to:", sort)}
-				/>
+				<WatchlistFilters />
 				{/* <WatchlistTable /> */}
 				<WatchlistGrid items={cleanedWatchlistData} />
 			</div>

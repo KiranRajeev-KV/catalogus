@@ -1,18 +1,13 @@
 import {
 	NavigationMenu,
-	NavigationMenuContent,
-	NavigationMenuIndicator,
 	NavigationMenuItem,
-	NavigationMenuLink,
 	NavigationMenuList,
-	NavigationMenuTrigger,
 	NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
 import { authClient } from "@/lib/auth-client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Button } from "./ui/button";
-import { ModeToggle } from "./mode-toggle";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
 
 export function MyNavbar() {
@@ -21,7 +16,7 @@ export function MyNavbar() {
 	console.log("Navbar session:", session);
 
 	return (
-		<nav className="w-full sticky top-0 z-50 border-b-1 border-primary py-6 backdrop-blur-md bg-secondary">
+		<nav className="w-full sticky top-0 z-50 border-b border-primary py-6 backdrop-blur-md bg-secondary">
 			{/* Navbar */}
 			<NavigationMenu className="max-w-[75%] mx-auto flex flex-row items-center">
 				{/* Logo & Name */}
