@@ -1,13 +1,13 @@
-import { MediaItem, Status } from "./mediaItem";
+import { MediaItem } from "./mediaItem";
 
 export interface WatchlistItem {
 	wishlistId: string;
 	userId: string;
 	mediaItemId: number;
-	status: Status;
+	status: "PLAN_TO_WATCH" | "WATCHING" | "COMPLETED" | "ON_HOLD" | "DROPPED";
 	rating: number;
-	completedAt?: string;
-	comments?: string;
+	completedAt?: string | null;
+	comments?: string | null;
 	createdAt: string;
 	updatedAt: string;
 	mediaItem: MediaItem;

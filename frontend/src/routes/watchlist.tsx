@@ -4,10 +4,10 @@ import { MyNavbar } from "@/components/navbar";
 import { WatchlistTable } from "@/components/watchlist-components/table";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
 import { WatchlistItem } from "@/types/watchlistItem";
-import { parse } from "date-fns";
+import { WishlistFilters } from "@/components/watchlist-components/wishlistFilters";
 
 export const Route = createFileRoute("/watchlist")({
-	component: RouteComponent,
+	component: Watchlist,
 	// beforeLoad: async (context) => {
 	// 	console.log("Watchlist beforeLoad");
 	// 	const session = await authClient.getSession();
@@ -17,30 +17,6 @@ export const Route = createFileRoute("/watchlist")({
 	// 	}
 	// }
 });
-
-function mapToEnums(item: any): WatchlistItem {
-	return {
-		...item,
-		status: item.status as WatchlistItem["status"],
-		completedAt: item.completedAt ? new Date(item.completedAt) : undefined,
-		comments: item.comments || undefined,
-		mediaItem: {
-			...item.mediaItem,
-			type: item.mediaItem.type as Type,
-			apiSource: item.mediaItem.apiSource as ApiSource,
-			metadata: {
-				...item.mediaItem.metadata,
-				release_date: item.mediaItem.metadata.release_date
-					? parse(
-							item.mediaItem.metadata.release_date,
-							"yyyy-MM-dd",
-							new Date(),
-						)
-					: undefined,
-			},
-		},
-	};
-}
 
 const tempWatchlistData: WatchlistItem[] = [
 	{
@@ -184,14 +160,21 @@ const tempWatchlistData: WatchlistItem[] = [
 	},
 ];
 
-const cleanedWatchlistData: WatchlistItem[] = tempWatchlistData.map(mapToEnums);
+const cleanedWatchlistData: WatchlistItem[] = tempWatchlistData;
 
-function RouteComponent() {
+function Watchlist() {
 	return (
 		<div>
 			<MyNavbar />
 			<div className="container mx-auto my-8 max-w-[75%]">
 				<h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
+				<WishlistFilters
+					onTypeChange={(type: string) => console.log("Type changed to:", type)}
+					onStatusChange={(status: string) =>
+						console.log("Status changed to:", status)
+					}
+					onSortChange={(sort: string) => console.log("Sort changed to:", sort)}
+				/>
 				{/* <WatchlistTable /> */}
 				<WatchlistGrid items={cleanedWatchlistData} />
 			</div>

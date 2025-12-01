@@ -1,31 +1,9 @@
-export enum Type {
-	MOVIE,
-	TV,
-	ANIME,
-	DRAMA,
-}
-
-export enum ApiSource {
-	TMDB,
-	TVDB,
-	ANILIST,
-	MDL,
-}
-
-export enum Status {
-	WATCHING,
-	COMPLETED,
-	ON_HOLD,
-	DROPPED,
-	PLAN_TO_WATCH,
-}
-
 export interface MediaItem {
 	itemId: number;
 	title: string;
-	apiSource: ApiSource;
+	apiSource: "TMDB" | "TVDB" | "ANILIST" | "MDL";
 	apiId: string;
-	type: Type;
+	type: "MOVIE" | "TV" | "ANIME" | "DRAMA";
 	metadata: {
 		adult?: boolean;
 		backdrop_path?: string;
