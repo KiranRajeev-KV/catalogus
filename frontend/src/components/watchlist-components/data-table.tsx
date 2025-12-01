@@ -30,7 +30,7 @@ export function DataTable<TData, TValue>({
 	});
 
 	return (
-		<div className="overflow-hidden rounded-md border max-w-full">
+		<div className="overflow-hidden border max-w-full">
 			<Table className="">
 				<TableHeader className="h-12">
 					{table.getHeaderGroups().map((headerGroup) => (
@@ -62,15 +62,18 @@ export function DataTable<TData, TValue>({
 								data-state={row.getIsSelected() && "selected"}
 							>
 								{row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id} className="align-top">
-                                        {cell.column.id === "title" ? (
-                                            <div className="font-semibold">
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </div>
-                                        ) : (
-                                            flexRender(cell.column.columnDef.cell, cell.getContext())
-                                        )}
-                                    </TableCell>
+									<TableCell key={cell.id} className="align-top">
+										{cell.column.id === "title" ? (
+											<div className="font-semibold">
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)}
+											</div>
+										) : (
+											flexRender(cell.column.columnDef.cell, cell.getContext())
+										)}
+									</TableCell>
 								))}
 							</TableRow>
 						))
