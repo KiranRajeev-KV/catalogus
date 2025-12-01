@@ -1,4 +1,4 @@
-import { MediaItem } from "./mediaItem";
+import type { MediaItem } from "./mediaItem";
 
 export type WatchlistStatus =
 	| "PLAN_TO_WATCH"

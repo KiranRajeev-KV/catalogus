@@ -1,15 +1,15 @@
 // watchlist table component
+
+import type { ApiSource, MediaType } from "@/types/mediaItem";
+import type { WatchlistItem } from "@/types/watchlistItem";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { ApiSource, MediaType } from "@/types/mediaItem";
-import { WatchlistItem } from "@/types/watchlistItem";
-import { parse } from "date-fns";
 
-function mapToEnums(item: any): WatchlistItem {
+function mapToEnums(item: WatchlistItem): WatchlistItem {
 	return {
 		...item,
 		status: item.status as WatchlistItem["status"],
-		completedAt: item.completedAt ? new Date(item.completedAt) : undefined,
+		completedAt: item.completedAt || undefined,
 		comments: item.comments || undefined,
 		mediaItem: {
 			...item.mediaItem,
@@ -17,13 +17,6 @@ function mapToEnums(item: any): WatchlistItem {
 			apiSource: item.mediaItem.apiSource as ApiSource,
 			metadata: {
 				...item.mediaItem.metadata,
-				release_date: item.mediaItem.metadata.release_date
-					? parse(
-							item.mediaItem.metadata.release_date,
-							"yyyy-MM-dd",
-							new Date(),
-						)
-					: undefined,
 			},
 		},
 	};

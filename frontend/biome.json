@@ -11,7 +11,8 @@
 			"src/**/*",
 			"!src/components/ui",
 			"!node_modules",
-			"!src/routeTree.gen.ts"
+			"!src/routeTree.gen.ts",
+			"!src/components/animate-ui"
 		]
 	},
 	"formatter": {

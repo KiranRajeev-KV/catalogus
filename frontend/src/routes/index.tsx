@@ -1,5 +1,5 @@
-import { MyNavbar } from "@/components/navbar";
 import { createFileRoute } from "@tanstack/react-router";
+import { MyNavbar } from "@/components/navbar";
 
 export const Route = createFileRoute("/")({ component: App });
 

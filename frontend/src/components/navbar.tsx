@@ -1,3 +1,5 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { GalleryVerticalEnd } from "lucide-react";
 import {
 	NavigationMenu,
 	NavigationMenuItem,
@@ -5,10 +7,8 @@ import {
 	NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
 import { authClient } from "@/lib/auth-client";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { GalleryVerticalEnd } from "lucide-react";
-import { Button } from "./ui/button";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
+import { Button } from "./ui/button";
 
 export function MyNavbar() {
 	const navigate = useNavigate();

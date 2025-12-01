@@ -1,6 +1,6 @@
-import { WatchlistItem } from "@/types/watchlistItem";
-import { MediaGridCard } from "./mediaGridCard";
+import type { WatchlistItem } from "@/types/watchlistItem";
 import { BlurFade } from "../ui/blur-fade";
+import { MediaGridCard } from "./mediaGridCard";
 
 interface WatchlistGridProps {
 	items: WatchlistItem[];

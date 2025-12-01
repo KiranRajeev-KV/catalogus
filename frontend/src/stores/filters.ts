@@ -1,6 +1,6 @@
-import { MediaType } from "@/types/mediaItem";
-import { WatchlistStatus } from "@/types/watchlistItem";
 import { create } from "zustand";
+import type { MediaType } from "@/types/mediaItem";
+import type { WatchlistStatus } from "@/types/watchlistItem";
 
 type TypeFilter = "" | MediaType;
 type StatusFilter = "" | WatchlistStatus;

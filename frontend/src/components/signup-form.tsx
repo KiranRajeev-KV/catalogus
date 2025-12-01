@@ -37,7 +37,6 @@ export function SignupForm({
 		}
 
 		setIsLoading(true);
-		// biome-ignore lint/correctness/noUnusedVariables: just not used
 		await authClient.signUp.email(
 			{ email, password, name, callbackURL: "/watchlist" },
 			{

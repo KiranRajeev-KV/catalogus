@@ -3,6 +3,9 @@
 // Status Filter - PLAN_TO_WATCH,WATCHING,COMPLETED,ON_HOLD,DROPPED -> Dropdown
 // Sort By - DATE_ADDED,DATE_RELEASED,TITLE,RATING,PRIORITY -> Dropdown
 
+import { Plus, Search } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Select,
 	SelectContent,
@@ -12,16 +15,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import useFilters from "@/stores/filters";
+import type { MediaType } from "@/types/mediaItem";
 import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "../animate-ui/components/radix/toggle-group";
-import { Plus, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
 import { Button } from "../ui/button";
-import useFilters from "@/stores/filters";
-import { MediaType } from "@/types/mediaItem";
 
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);

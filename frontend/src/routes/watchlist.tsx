@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MyNavbar } from "@/components/navbar";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
-import { WatchlistItem } from "@/types/watchlistItem";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
+import type { WatchlistItem } from "@/types/watchlistItem";
 
 export const Route = createFileRoute("/watchlist")({
 	component: Watchlist,

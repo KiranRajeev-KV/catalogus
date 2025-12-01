@@ -227,8 +227,10 @@ code {
 	}
 }
 
+/* biome-ignore lint/correctness/noUnknownTypeSelector : no idea what this is */
 ::view-transition-old(root),
-::view-transition-new(root) {
+/* biome-ignore lint/correctness/noUnknownTypeSelector : no idea what this is */
+	::view-transition-new(root) {
 	animation: none;
 	mix-blend-mode: normal;
 }

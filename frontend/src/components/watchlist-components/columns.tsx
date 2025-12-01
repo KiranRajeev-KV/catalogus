@@ -1,8 +1,7 @@
-import { ColumnDef } from "@tanstack/react-table";
-import type { WatchlistItem } from "@/types/watchlistItem";
+import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Star } from "lucide-react";
-import { WatchlistStatus } from "@/types/watchlistItem";
+import type { WatchlistItem, WatchlistStatus } from "@/types/watchlistItem";
 
 export const columns: ColumnDef<WatchlistItem>[] = [
 	{
@@ -24,8 +23,7 @@ export const columns: ColumnDef<WatchlistItem>[] = [
 		header: "Title",
 		cell: ({ row }) => {
 			const title = row.original.mediaItem.title;
-			const overview =
-				row.original.mediaItem.metadata.overview?.slice(0, 80) + "...";
+			const overview = `${row.original.mediaItem.metadata.overview?.slice(0, clea80)}...`;
 			const release_date = row.original.mediaItem.metadata.release_date
 				? format(new Date(row.original.mediaItem.metadata.release_date), "yyyy")
 				: undefined;
