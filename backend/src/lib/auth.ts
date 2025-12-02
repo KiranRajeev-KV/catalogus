@@ -13,6 +13,12 @@ export const auth = betterAuth({
 		enabled: true,
 		autoSignIn: true,
 	},
+	session: {
+		cookieCache: {
+			enabled: true,
+		}
+
+	},
 	secret: process.env.BETTER_AUTH_SECRET,
 	baseURL: process.env.BETTER_AUTH_URL,
 	trustedOrigins: [
