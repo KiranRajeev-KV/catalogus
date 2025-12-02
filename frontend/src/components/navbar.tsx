@@ -50,7 +50,7 @@ export function MyNavbar() {
 				{/* Login/Logout */}
 				<div className="flex justify-end flex-1 gap-2">
 					<AnimatedThemeToggler />
-					{!session.data ? (
+					{session.isPending ? (
 						<div className="flex gap-2">
 							<Button
 								variant="secondary"
@@ -71,10 +71,12 @@ export function MyNavbar() {
 						<Button
 							variant="destructive"
 							className="text-lg cursor-pointer"
-							onClick={() => {
-								authClient.signOut({
+							onClick={async () => {
+								await authClient.signOut({
 									fetchOptions: {
-										onSuccess: () => navigate({ to: "/signin" }),
+										onSuccess: async () => {
+											navigate({ to: "/signin" });
+										},
 									},
 								});
 							}}

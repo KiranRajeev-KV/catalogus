@@ -1,22 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { MyNavbar } from "@/components/navbar";
-import { WatchlistGrid } from "@/components/watchlist-components/grid";
-import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
-import type { WatchlistItem } from "@/types/watchlistItem";
+import { WatchlistItem } from "@/types/watchlistItem";
 
-export const Route = createFileRoute("/watchlist")({
-	component: Watchlist,
-	// beforeLoad: async (context) => {
-	// 	console.log("Watchlist beforeLoad");
-	// 	const session = await authClient.getSession();
-	// 	console.log("Watchlist session:", session);
-	// 	if (!session?.data?.user) {
-	// 		throw redirect({to: "/signin" });
-	// 	}
-	// }
-});
-
-const tempWatchlistData: WatchlistItem[] = [
+export const tempWatchlistData: WatchlistItem[] = [
 	{
 		wishlistId: "cmilyqx3i0000wkum40nkgvjo",
 		userId: "MupawCBm3NrnG9FI5HdkmjhcSiNjcHdo",
@@ -225,19 +209,3 @@ const tempWatchlistData: WatchlistItem[] = [
 		},
 	},
 ];
-
-const cleanedWatchlistData: WatchlistItem[] = tempWatchlistData;
-
-function Watchlist() {
-	return (
-		<div>
-			<MyNavbar />
-			<div className="container mx-auto my-8 max-w-[75%]">
-				<h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
-				<WatchlistFilters />
-				{/* <WatchlistTable /> */}
-				<WatchlistGrid items={cleanedWatchlistData} />
-			</div>
-		</div>
-	);
-}
