@@ -7,6 +7,7 @@ const api = axios.create({
 	baseURL: BASE_URL,
 	timeout: 1000,
 	headers: { "Content-Type": "application/json" },
+	withCredentials: true,
 });
 
 export default api;
@@ -26,7 +27,6 @@ export function fetchWatchlist(
 				sort,
 				status,
 			},
-			withCredentials: true,
 		})
 		.then((response) => response.data)
 		.catch((error) => {
