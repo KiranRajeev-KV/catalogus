@@ -13,7 +13,6 @@ import { Button } from "./ui/button";
 export function MyNavbar() {
 	const navigate = useNavigate();
 	const session = authClient.useSession();
-	console.log("Navbar session:", session);
 
 	return (
 		<nav className="w-full sticky top-0 z-50 border-b border-primary py-6 backdrop-blur-md bg-secondary">

@@ -15,7 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import useFilters from "@/stores/filters";
+import useFilters from "@/stores/filtersStore";
 import type { MediaType } from "@/types/mediaItem";
 import {
 	ToggleGroup,
@@ -53,7 +53,6 @@ export function WatchlistFilters() {
 
 	// filters store
 	const filters = useFilters();
-	console.log("Filters State:", filters);
 
 	return (
 		<div className="flex flex-row justify-between mb-3 py-2">
@@ -97,7 +96,6 @@ export function WatchlistFilters() {
 				{/* Type Filter */}
 				<ToggleGroup
 					type="single"
-					defaultValue="ALL"
 					className="border gap-0 max-h-9 shadow-xs border-input"
 				>
 					{["Movie", "TV", "Anime", "Drama"].map((type) => (
@@ -124,7 +122,7 @@ export function WatchlistFilters() {
 						filters.setStatusFilter(status === "ALL" ? "" : status)
 					}
 				>
-					<SelectTrigger className="w-[180px] text-base rounded-lg text-foreground">
+					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent className="text-base">
@@ -151,7 +149,7 @@ export function WatchlistFilters() {
 
 				{/* Sort By Dropdown */}
 				<Select onValueChange={(sortBy) => filters.setSortBy(sortBy)}>
-					<SelectTrigger className="w-[180px] text-base rounded-lg text-foreground">
+					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Sort By" className="text-foreground" />
 					</SelectTrigger>
 					<SelectContent className="text-base">
