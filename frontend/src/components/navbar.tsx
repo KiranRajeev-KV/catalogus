@@ -50,6 +50,7 @@ export function MyNavbar() {
 				{/* Login/Logout */}
 				<div className="flex justify-end flex-1 gap-2">
 					<AnimatedThemeToggler />
+					{/* TODO: fix the flashing of login/logout buttons when session is loading */}
 					{session.isPending ? (
 						<div className="flex gap-2">
 							<Button

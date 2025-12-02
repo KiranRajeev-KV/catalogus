@@ -1,30 +1,32 @@
-// routes/_auth.tsx
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { authClient } from "@/lib/auth-client";
+import { getAuthSession } from "@/lib/auth-server";
 
 export const Route = createFileRoute("/_auth")({
-	beforeLoad: async ({ location }) => {
-		const session = await authClient.getSession();
+    beforeLoad: async ({ location }) => {
+        const authData = await getAuthSession();
 
-		// We pass the current location to redirect back after login
-		if (!session?.data) {
-			throw redirect({
-				to: "/signin",
-				search: {
-					redirect: location.href,
-				},
-			});
-		}
+        if (!authData?.session) {
+            throw redirect({
+                to: "/signin",
+                search: {
+                    redirect: location.href,
+                },
+            });
+        }
 
-		return { session: session.data };
-	},
-	component: AuthLayout,
+        // 3. Return the full data so children can access 'user' info
+        return { 
+            session: authData.session,
+            user: authData.user 
+        };
+    },
+    component: AuthLayout,
 });
 
 function AuthLayout() {
-	return (
-		<div>
-			<Outlet />
-		</div>
-	);
+    return (
+        <div>
+            <Outlet />
+        </div>
+    );
 }
