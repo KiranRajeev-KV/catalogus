@@ -4,6 +4,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import itemsRoutes from "./routes/items.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
+import watchlistRoutes from "./routes/watchlist.routes.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 
 app.use("/api/auth", authRoutes);
+app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/items", itemsRoutes);
 
@@ -26,3 +28,4 @@ app.get("/", (_, res) => {
 app.listen(port, () => {
 	console.log(`Server is running at port ${port}`);
 });
+
