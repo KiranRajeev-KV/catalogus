@@ -2,6 +2,8 @@ import axios from "axios";
 import { ApiSource, Type } from "../generated/prisma/client.js";
 import "dotenv/config";
 import type { TMDBMovie, TMDBTV } from "../types/tmdb.js";
+import { release } from "node:os";
+import { ta } from "zod/locales";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -102,5 +104,36 @@ export async function getTMDBMovieDetails(apiId: string) {
 // get TV show details from TMDB by apiId
 export async function getTMDBTVDetails(apiId: string) {
 	const tvDetails = await api.get(`/tv/${apiId}`);
-	return tvDetails.data;
+	
+	const structuredDetails = {
+		title: tvDetails.data.name,
+		type: Type.TV,
+		apiSource: ApiSource.TMDB,
+		apiId: tvDetails.data.id.toString(),
+		metadata: {
+			// essential fields
+			posterPath: tvDetails.data.poster_path,
+			episodeRunTime: tvDetails.data.episode_run_time,
+			releaseDate: tvDetails.data.first_air_date,
+			genres: tvDetails.data.genres.map((g: { id: number; name: string }) => g.name),
+			endDatate: tvDetails.data.last_air_date,
+			totalEpisodes: tvDetails.data.number_of_episodes,
+			totalSeasons: tvDetails.data.number_of_seasons,
+			overview: tvDetails.data.overview,
+			rating: tvDetails.data.vote_average,
+
+			// additional fields thats nice to have
+			backdropPath: tvDetails.data.backdrop_path,
+			languages: tvDetails.data.languages,
+			originalLanguage: tvDetails.data.original_language,
+			originCountry: tvDetails.data.origin_country,
+			originalName: tvDetails.data.original_name,
+			seasons: tvDetails.data.seasons,
+			status: tvDetails.data.status,
+			tagline: tvDetails.data.tagline,
+			voteCount: tvDetails.data.vote_count,
+		},
+	}
+
+	return structuredDetails;
 }
