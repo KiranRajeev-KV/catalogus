@@ -37,7 +37,7 @@ export const columns: ColumnDef<WatchlistItem>[] = [
 					<div>
 						<span className="text-sm text-muted-foreground">{overview}</span>
 					</div>
-					{/* TODO: MAYBE ADD A TOOLTIP OF WHERE THIS RATING IS FROM (TMDB, TVMB, ANILIST, MDL) */}
+					{/* TODO: MAYBE ADD A TOOLTIP OF WHERE THIS RATING IS FROM (TMDB, TVMB, ANILIST) */}
 					<div className="rounded-md text-foreground bg-primary text-sm font-semibold px-2 py-1 w-fit mt-1 flex items-center">
 						<Star className="inline-block mr-1 h-4 w-4" />
 						{apiRating.toFixed(1)}

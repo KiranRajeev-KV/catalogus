@@ -72,14 +72,12 @@ enum Type {
   MOVIE
   TV
   ANIME
-  DRAMA
 }
 
 enum ApiSource {
   TMDB
   TVDB
   ANILIST
-  MDL
 }
 
 enum Status {

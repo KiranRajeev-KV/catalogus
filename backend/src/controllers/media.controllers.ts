@@ -23,7 +23,6 @@ export const searchMedia = async (req: Request, res: Response) => {
 	// MOVIE -> search in TMDB
 	// TV -> search in TMDB
 	// ANIME -> search in ANILIST
-	// DRAMA -> search TMDB
 
 	switch (type) {
 		case "MOVIE": {

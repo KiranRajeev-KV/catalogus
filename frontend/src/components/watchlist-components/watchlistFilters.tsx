@@ -107,7 +107,7 @@ export function WatchlistFilters() {
 					type="single"
 					className="border gap-0 max-h-9 shadow-xs border-input"
 				>
-					{["Movie", "TV", "Anime", "Drama"].map((type) => (
+					{["Movie", "TV", "Anime"].map((type) => (
 						<ToggleGroupItem
 							key={type}
 							value={type}

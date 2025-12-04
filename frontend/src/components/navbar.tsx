@@ -33,7 +33,7 @@ export function MyNavbar() {
 					<NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
 						<Link to="/watchlist">Watchlist</Link>
 					</NavigationMenuItem>
-					<NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
+					{/* <NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
 						<Link to="/movies">Movies</Link>
 					</NavigationMenuItem>
 					<NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
@@ -41,9 +41,9 @@ export function MyNavbar() {
 					</NavigationMenuItem>
 					<NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
 						<Link to="/anime">Anime</Link>
-					</NavigationMenuItem>
+					</NavigationMenuItem> */}
 					<NavigationMenuItem className="hover:underline underline-offset-4 decoration-2 decoration-primary transition-all ease-in-out hover:scale-105 hover:duration-300">
-						<Link to="/drama">Dramas</Link>
+						<Link to="/stats">Stats</Link>
 					</NavigationMenuItem>
 				</NavigationMenuList>
 

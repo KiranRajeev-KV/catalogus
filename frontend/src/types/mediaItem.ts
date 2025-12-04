@@ -1,5 +1,5 @@
 export type MediaType = "MOVIE" | "TV" | "ANIME";
-export type ApiSource = "TMDB" | "TVDB" | "ANILIST" | "MDL";
+export type ApiSource = "TMDB" | "TVDB" | "ANILIST";
 
 // export interface MediaItem {
 // 	itemId: number;
