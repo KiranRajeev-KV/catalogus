@@ -1,5 +1,5 @@
-import { getWatchlist } from "../controllers/watchlist.controller.js";
 import { Router } from "express";
+import { getWatchlist } from "../controllers/watchlist.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
 const router: Router = Router();
