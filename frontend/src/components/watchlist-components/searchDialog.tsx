@@ -1,5 +1,9 @@
+// frontend/src/components/watchlist-components/searchDialog.tsx
+
 import { useState } from "react";
 import { Search, Loader2, Plus, X } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
 	Dialog,
 	DialogContent,
@@ -18,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType, TMDBSearchResult } from "@/types/mediaItem";
-import { searchMedia } from "@/api/axios";
+import { searchMedia, addItemToWatchlist } from "@/api/axios";
 
 interface SearchResponse {
 	results: TMDBSearchResult[];
@@ -35,22 +39,30 @@ export function WatchlistSearchModal({
 	const [results, setResults] = useState<TMDBSearchResult[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [hasSearched, setHasSearched] = useState(false);
+	const [addingId, setAddingId] = useState<string | null>(null);
+
+	const queryClient = useQueryClient();
 
 	// TMDB Image Base URL
 	const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w300";
 
-    const handleSearch = async () => {
-        if (!query.trim()) return;
+	const handleSearch = async () => {
+		if (!query.trim()) return;
 
-        setIsLoading(true);
-        setHasSearched(true);
-        setResults([]);
+		setIsLoading(true);
+		setHasSearched(true);
+		setResults([]);
 
-        const data: SearchResponse = await searchMedia(type, query);
-        setResults(data.results || []);
-
-        setIsLoading(false);
-    };
+		try {
+			const data: SearchResponse = await searchMedia(type, query);
+			setResults(data.results || []);
+		} catch (error) {
+			console.error("Search failed", error);
+			toast.error("Failed to search media");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter") {
@@ -58,16 +70,53 @@ export function WatchlistSearchModal({
 		}
 	};
 
+	const mutation = useMutation({
+		mutationFn: (item: TMDBSearchResult) => {
+			return addItemToWatchlist({
+				apiId: item.apiId,
+				type: type,
+				status: "PLAN_TO_WATCH",
+			});
+		},
+		onSuccess: () => {
+			toast.success("Added to watchlist");
+			queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+			setOpen(false);
+			setQuery("");
+			setResults([]);
+			setHasSearched(false);
+		},
+		onError: (error: any) => {
+			if (error.response?.status === 409) {
+				toast.info("This is already in your watchlist");
+			} else {
+				toast.error("Failed to add to watchlist");
+			}
+		},
+		onSettled: () => {
+			setAddingId(null);
+		},
+	});
+
 	const addToWatchlist = (item: TMDBSearchResult) => {
-        setQuery("");
-        setResults([]);
-		console.log("Adding to watchlist:", item);
-		// Add your API call logic here
-		setOpen(false);
+		setAddingId(item.apiId);
+		mutation.mutate(item);
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog
+			open={open}
+			onOpenChange={(val) => {
+				setOpen(val);
+				if (!val) {
+					setTimeout(() => {
+						setQuery("");
+						setResults([]);
+						setHasSearched(false);
+					}, 200);
+				}
+			}}
+		>
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col rounded-lg">
 				<DialogHeader>
@@ -93,28 +142,28 @@ export function WatchlistSearchModal({
 						</SelectContent>
 					</Select>
 
-                    <div className="relative flex-1">
-                        <Input
-                            placeholder={`Search ${type.toLowerCase()}...`}
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="pr-10 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:border focus-visible:ring-2 md:text-base text-foreground"
-                            autoFocus
-                        />
-                        {query && (
-                            <button
-                                onClick={() => {
-                                    setHasSearched(false);
-                                    setResults([]);
-                                    setQuery("");
-                                }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
+					<div className="relative flex-1">
+						<Input
+							placeholder={`Search ${type.toLowerCase()}...`}
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							onKeyDown={handleKeyDown}
+							className="pr-10 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:border focus-visible:ring-2 md:text-base text-foreground"
+							autoFocus
+						/>
+						{query && (
+							<button
+								onClick={() => {
+									setHasSearched(false);
+									setResults([]);
+									setQuery("");
+								}}
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+							>
+								<X className="h-4 w-4" />
+							</button>
+						)}
+					</div>
 
 					<Button onClick={handleSearch} disabled={isLoading}>
 						{isLoading ? (
@@ -151,10 +200,17 @@ export function WatchlistSearchModal({
 										{/* Hover Overlay with Add Button */}
 										<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
 											<div
-												className="bg-primary text-primary-foreground rounded-full p-2 shadow-lg transform scale-90 group-hover:scale-100 transition-transform"
-												onClick={() => addToWatchlist(item)}
+												className="bg-primary text-primary-foreground rounded-full p-2 shadow-lg transform scale-90 group-hover:scale-100 transition-transform cursor-pointer"
+												onClick={(e) => {
+													e.stopPropagation();
+													if (addingId !== item.apiId) addToWatchlist(item);
+												}}
 											>
-												<Plus className="w-6 h-6" />
+												{addingId === item.apiId ? (
+													<Loader2 className="w-6 h-6 animate-spin" />
+												) : (
+													<Plus className="w-6 h-6" />
+												)}
 											</div>
 										</div>
 									</div>

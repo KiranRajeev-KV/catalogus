@@ -24,7 +24,7 @@ export function MediaGridCard({ item }: MediaGridCardProps) {
 			{/* Poster image */}
 			<div className="rounded-lg overflow-hidden shadow-md hover:scale-105 hover:duration-300 transition-transform">
 				<img
-					src={`${TMDB_IMAGE_BASE_URL}${item.mediaItem.metadata.poster_path}`}
+					src={`${TMDB_IMAGE_BASE_URL}${item.mediaItem.metadata.posterPath}`}
 					alt={item.mediaItem.title}
 					className="w-full h-88 object-cover"
 				/>
@@ -36,8 +36,8 @@ export function MediaGridCard({ item }: MediaGridCardProps) {
 					{item.mediaItem.title}
 				</h2>
 				<p className="text-md text-muted-foreground">
-					{item.mediaItem.metadata.release_date
-						? new Date(item.mediaItem.metadata.release_date).getFullYear()
+					{item.mediaItem.metadata.releaseDate
+						? new Date(item.mediaItem.metadata.releaseDate).getFullYear()
 						: "Release date unknown"}
 				</p>
 			</div>

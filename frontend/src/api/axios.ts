@@ -43,4 +43,13 @@ export async function searchMedia(type: MediaType, query: string) {
 		},
 	});
 	return response.data;
-}	
+}
+
+export const addItemToWatchlist = async (data: {
+	apiId: string;
+	type: MediaType;
+	status: StatusFilter;
+}) => {
+	const response = await api.post("/watchlist", data);
+	return response.data;
+};
