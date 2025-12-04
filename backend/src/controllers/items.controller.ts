@@ -9,7 +9,7 @@ import {
 	SearchItemsSchema,
 	UpdateMediaItemSchema,
 } from "../schemas/items.schema.js";
-import { searchTMDB } from "../services/tmdb.service.js";
+import { searchTMDBMovie } from "../services/tmdb.service.js";
 import type { AddMediaItemDto } from "../types/media.js";
 
 export const addItem = async (req: Request, res: Response) => {
