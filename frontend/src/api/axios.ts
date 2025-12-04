@@ -34,3 +34,13 @@ export async function fetchWatchlist(
 	});
 	return response.data;
 }
+
+export async function searchMedia(type: MediaType, query: string) {
+	const response = await api.get("/media/search", {
+		params: {
+			type: type,
+			q: query,
+		},
+	});
+	return response.data;
+}	

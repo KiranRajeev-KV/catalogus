@@ -1,6 +1,6 @@
 // frontend/src/components/watchlist-components/watchlistFilters.tsx
 // Search Bar
-// Type Filter - ALL,MOVIE,TV,ANIME,MDL -> Button Group
+// Type Filter - ALL,MOVIE,TV,ANIME -> Button Group
 // Status Filter - PLAN_TO_WATCH,WATCHING,COMPLETED,ON_HOLD,DROPPED -> Dropdown
 // Sort By - DATE_ADDED,DATE_RELEASED,TITLE,RATING,PRIORITY -> Dropdown
 
@@ -26,6 +26,8 @@ import {
 	ToggleGroupItem,
 } from "../animate-ui/components/radix/toggle-group";
 import { Button } from "../ui/button";
+import { WatchlistSearchModal } from "@/components/watchlist-components/searchDialog";
+
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);
 
@@ -61,9 +63,11 @@ export function WatchlistFilters() {
 		<div className="flex flex-row justify-between mb-3 py-2">
 			<div className="flex flex-row space-x-2 items-center">
 				{/* Add to watchlist button */}
-				<Button className="bg-primary rounded-lg shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
-					<Plus className="size-6 text-primary-foreground" />
-				</Button>
+				<WatchlistSearchModal>
+					<Button className="bg-primary rounded-lg shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
+						<Plus className="size-6 text-primary-foreground" />
+					</Button>
+				</WatchlistSearchModal>
 
 				{/* Search Bar */}
 				<div className="relative flex items-center">
