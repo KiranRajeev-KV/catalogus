@@ -162,7 +162,7 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 		// 3. create or connect the media item in MediaItem table
 		const mediaItem = await prisma.mediaItem.upsert({
 			where: {
-				apiId_apiSource: {
+				apiSource_apiId: {
 					apiId: apiId,
 					apiSource: "TMDB",
 				},
