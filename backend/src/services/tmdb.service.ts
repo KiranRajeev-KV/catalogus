@@ -66,3 +66,41 @@ export async function searchTMDBTV(query: string) {
 
 	return structuredResults;
 }
+
+// get movie details from TMDB by apiId
+export async function getTMDBMovieDetails(apiId: string) {
+	const movieDetails = await api.get(`/movie/${apiId}`);
+	
+	const structuredDetails = {
+		title: movieDetails.data.title,
+		type: Type.MOVIE,
+		apiSource: ApiSource.TMDB,
+		apiId: movieDetails.data.id.toString(),
+		metadata: {
+			// essential fields
+			posterPath: movieDetails.data.poster_path,
+			releaseDate: movieDetails.data.release_date,
+			genres: movieDetails.data.genres.map((g: { id: number; name: string }) => g.name),
+			overview: movieDetails.data.overview,
+			runtime: movieDetails.data.runtime,
+			rating: movieDetails.data.vote_average,
+
+			// additional fields thats nice to have
+			backdropPath: movieDetails.data.backdrop_path,
+			status: movieDetails.data.status,
+			tagline: movieDetails.data.tagline,
+			originalLanguage: movieDetails.data.original_language,
+			originalTitle: movieDetails.data.original_title,
+			imdbId: movieDetails.data.imdb_id,
+			voteCount: movieDetails.data.vote_count,
+		},
+	}
+
+	return structuredDetails;
+}
+
+// get TV show details from TMDB by apiId
+export async function getTMDBTVDetails(apiId: string) {
+	const tvDetails = await api.get(`/tv/${apiId}`);
+	return tvDetails.data;
+}

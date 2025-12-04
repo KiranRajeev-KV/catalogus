@@ -2,7 +2,8 @@
 import type { Request, Response } from "express";
 import z from "zod";
 import { prisma } from "../db/client.js";
-import { GetWatchlistSchema } from "../schemas/watchlist.schema.js";
+import { AddWatchlistSchema, GetWatchlistSchema } from "../schemas/watchlist.schema.js";
+import { getTMDBMovieDetails, getTMDBTVDetails } from "../services/tmdb.service.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
 export const getWatchlist = async (req: Request, res: Response) => {
@@ -89,3 +90,108 @@ export const getWatchlist = async (req: Request, res: Response) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
+
+// POST /watchlist
+export const addToWatchlist = async (req: Request, res: Response) => {
+	// check if user is authenticated
+	const userId = req.user?.id;
+	if (!userId) {
+		console.log("Error 401: Unauthorized access to add watchlist item");
+		return res.status(401).json({ error: "Unauthorized" });
+	}
+
+	// apiId,status,rating,comments
+	const result = AddWatchlistSchema.safeParse(req.body);
+	if (!result.success) {
+		console.log("Error 400: Invalid request body", result.error);
+		return res.status(400).json({
+			error: "Invalid request body",
+			details: z.treeifyError(result.error),
+		});
+	}
+
+	const { apiId, type, status, rating, comments } = result.data;
+
+	try {
+		// we need to do multiple steps here:
+		// 1.check if item already exists in watchlist
+		// 2.fetch media item details from external API
+		// 3.create or connect the media item in MediaItem table
+		// 4.create the watchlist entry
+
+		// 1. check if the item already exists in the user's watchlist
+		const existingItem = await prisma.wishlist.findFirst({
+			where: {
+				userId: userId,
+				mediaItem: {
+					apiId: apiId,
+					type: type,
+				},
+			},
+		});
+
+		if (existingItem) {
+			console.log("Error 409: Item already exists in watchlist");
+			return res.status(409).json({ error: "Item already exists in watchlist" });
+		}
+
+		// 2. fetch media item details from external API
+		// movie & tv calls TMDB, anime calls Anilist
+		let details: any;
+		switch (type) {
+			case "MOVIE": {
+				details = await getTMDBMovieDetails(apiId);
+				break;
+			}
+			case "TV": {
+				details = await getTMDBTVDetails(apiId);
+				break;
+			}
+			case "ANIME": {
+				// TODO: implement Anilist service
+				details = {};
+				break;
+			}
+		}
+
+		if (!details) {
+			console.log("Error 500: Failed to fetch media item details");
+			return res.status(500).json({ error: "Failed to fetch media item details" });
+		}
+
+		// 3. create or connect the media item in MediaItem table
+		const mediaItem = await prisma.mediaItem.upsert({
+			where: {
+				apiId_apiSource: {
+					apiId: apiId,
+					apiSource: "TMDB",
+				},
+			},
+			update: {},
+			create: details
+		});
+
+		if (!mediaItem) {
+			console.log("Error 500: Failed to create or connect media item");
+			return res.status(500).json({ error: "Failed to create or connect media item" });
+		}
+
+		// 4. create the watchlist entry
+		const watchlistEntry = await prisma.wishlist.create({
+			data: {
+				userId: userId,
+				mediaItemId: mediaItem.itemId,
+				status: status,
+				rating: rating,
+				comments: comments,
+			},
+			include: { mediaItem: true },
+		});
+
+		console.log("Status 201: Watchlist item added successfully");
+		res.status(201).json(watchlistEntry);
+	} catch (error) {
+		console.error("Error 500: Internal server error", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}

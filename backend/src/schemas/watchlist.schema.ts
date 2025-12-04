@@ -32,3 +32,23 @@ export const GetWatchlistSchema = z.object({
 });
 
 export type GetWatchlistQuery = z.infer<typeof GetWatchlistSchema>;
+
+
+export const AddWatchlistSchema = z.object({
+	// apiId - unique identifier from external API
+	apiId: z.string().min(1),
+
+	// type - MOVIE | TV | ANIME
+	type: z.nativeEnum(Type),
+
+	// status - PLANNING | WATCHING | COMPLETED | ON_HOLD | DROPPED
+	status: z.nativeEnum(Status).default(Status.PLAN_TO_WATCH),
+
+	// rating? - 0 to 10
+	rating: z.number().min(0).max(10).optional(),
+
+	// comments?
+	comments: z.string().optional(),
+});
+
+export type AddWatchlistBody = z.infer<typeof AddWatchlistSchema>;
