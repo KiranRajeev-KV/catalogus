@@ -1,3 +1,4 @@
+// frontend/src/components/watchlist-components/watchlistFilters.tsx
 // Search Bar
 // Type Filter - ALL,MOVIE,TV,ANIME,MDL -> Button Group
 // Status Filter - PLAN_TO_WATCH,WATCHING,COMPLETED,ON_HOLD,DROPPED -> Dropdown
@@ -15,14 +16,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import useFilters from "@/stores/filtersStore";
+import useFilters, {
+	type SortBy,
+	type StatusFilter,
+} from "@/stores/filtersStore";
 import type { MediaType } from "@/types/mediaItem";
 import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "../animate-ui/components/radix/toggle-group";
 import { Button } from "../ui/button";
-
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);
 
@@ -37,7 +40,7 @@ export function WatchlistFilters() {
 
 	// Keyboard shortcut for search (Cmd+K / Ctrl+K)
 	useEffect(() => {
-		const handleKeyDown = (e) => {
+		const handleKeyDown = (e: KeyboardEvent) => {
 			const isMac = navigator.platform.toUpperCase().includes("MAC");
 			const modKey = isMac ? e.metaKey : e.ctrlKey;
 
@@ -84,8 +87,10 @@ export function WatchlistFilters() {
 								className="bg-input ml-2 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:outline-none text-base text-foreground"
 								autoFocus={true}
 								placeholder="Search..."
-								value={filters.searchQuery}
-								onChange={(e) => filters.setSearchQuery(e.target.value)}
+								value={filters.q}
+								onChange={(e) =>
+									filters.setSearchQuery(e.target.value || undefined)
+								}
 							/>
 						)}
 					</AnimatePresence>
@@ -103,24 +108,25 @@ export function WatchlistFilters() {
 							key={type}
 							value={type}
 							className={`w-18 px-3 text-base ${type !== "ALL" ? "border-l" : ""}`}
-							onClick={() =>
+							onClick={() => {
 								filters.setTypeFilter(
-									filters.typeFilter === type.toUpperCase()
-										? ""
+									filters.type === type.toUpperCase()
+										? undefined
 										: (type.toUpperCase() as MediaType),
-								)
-							}
+								);
+							}}
 						>
 							{type}
 						</ToggleGroupItem>
 					))}
 				</ToggleGroup>
-
 				{/* Status Dropdown */}
 				<Select
-					onValueChange={(status) =>
-						filters.setStatusFilter(status === "ALL" ? "" : status)
-					}
+					onValueChange={(status) => {
+						filters.setStatusFilter(
+							status === "ALL" ? undefined : (status as StatusFilter),
+						);
+					}}
 				>
 					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Status" />
@@ -148,7 +154,11 @@ export function WatchlistFilters() {
 				</Select>
 
 				{/* Sort By Dropdown */}
-				<Select onValueChange={(sortBy) => filters.setSortBy(sortBy)}>
+				<Select
+					onValueChange={(sort) => {
+						filters.setSortBy(sort as SortBy);
+					}}
+				>
 					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Sort By" className="text-foreground" />
 					</SelectTrigger>
@@ -164,17 +174,16 @@ export function WatchlistFilters() {
 								"title_za",
 							].map((option) => (
 								<SelectItem key={option} value={option} className="text-base">
-									{option === "latest"
-										? "Latest"
-										: option === "oldest"
-											? "Oldest"
-											: option === "score_high"
-												? "Highest Score"
-												: option === "score_low"
-													? "Lowest Score"
-													: option === "title_az"
-														? "Title (A-Z)"
-														: "Title (Z-A)"}
+									{
+										{
+											latest: "Latest",
+											oldest: "Oldest",
+											score_high: "Highest Score",
+											score_low: "Lowest Score",
+											title_az: "Title (A-Z)",
+											title_za: "Title (Z-A)",
+										}[option]
+									}
 								</SelectItem>
 							))}
 						</SelectGroup>

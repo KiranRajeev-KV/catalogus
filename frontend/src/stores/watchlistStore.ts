@@ -1,30 +1,31 @@
+// frontend/src/stores/watchlistStore.ts
 import { create } from "zustand";
 import type { WatchlistItem } from "@/types/watchlistItem";
-import { fetchWatchlist } from "@/api/axios";
-import type { SortBy, StatusFilter } from "./filtersStore";
 
 interface WatchlistState {
 	watchlist: WatchlistItem[];
+	paginationDetails: {
+		total: number;
+		page: number;
+		limit: number;
+		totalPages: number;
+	};
+	setPaginationDetails: (details: {
+		total: number;
+		page: number;
+		limit: number;
+		totalPages: number;
+	}) => void;
+	setWatchlist: (items: WatchlistItem[]) => void;
 }
 export const useWatchlistStore = create<WatchlistState>((set) => ({
 	watchlist: [],
-
-	updateWatchlistItem: (updatedItem: WatchlistItem) => {
-		set((state) => ({
-			watchlist: state.watchlist.map((item) =>
-				item.wishlistId === updatedItem.wishlistId ? updatedItem : item,
-			),
-		}));
+	paginationDetails: {
+		total: 0,
+		page: 0,
+		limit: 0,
+		totalPages: 0,
 	},
-
-	fetchWatchlist: async (
-		page: number,
-		limit: number,
-		sort: SortBy,
-		status: StatusFilter,
-		search?: string,
-	) => {
-		const data = await fetchWatchlist(page, limit, sort, status, search);
-		set({ watchlist: data });
-	},
+	setPaginationDetails: (details) => set({ paginationDetails: details }),
+	setWatchlist: (items: WatchlistItem[]) => set({ watchlist: items }),
 }));

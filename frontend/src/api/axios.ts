@@ -1,5 +1,7 @@
+// frontend/src/api/axios.ts
 import axios from "axios";
 import type { SortBy, StatusFilter } from "@/stores/filtersStore";
+import type { MediaType } from "@/types/mediaItem";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -12,25 +14,23 @@ const api = axios.create({
 
 export default api;
 
-export function fetchWatchlist(
+export async function fetchWatchlist(
 	page: number,
-	limit: number,
-	sort: SortBy,
-	status: StatusFilter,
-	_search?: string,
+	limit?: number,
+	status?: StatusFilter,
+	type?: MediaType,
+	sort?: SortBy,
+	q?: string,
 ) {
-	return api
-		.get("/wishlist", {
-			params: {
-				page,
-				limit,
-				sort,
-				status,
-			},
-		})
-		.then((response) => response.data)
-		.catch((error) => {
-			console.error("Error fetching watchlist:", error);
-			return [];
-		});
+	const response = await api.get("/watchlist", {
+		params: {
+			page: page,
+			limit: limit,
+			status: status,
+			type: type,
+			sort: sort,
+			q: q,
+		},
+	});
+	return response.data;
 }

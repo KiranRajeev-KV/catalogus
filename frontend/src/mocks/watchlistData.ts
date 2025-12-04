@@ -1,4 +1,4 @@
-import { WatchlistItem } from "@/types/watchlistItem";
+import type { WatchlistItem } from "@/types/watchlistItem";
 
 export const tempWatchlistData: WatchlistItem[] = [
 	{

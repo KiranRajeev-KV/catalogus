@@ -2,8 +2,8 @@ import { create } from "zustand";
 import type { MediaType } from "@/types/mediaItem";
 import type { WatchlistStatus } from "@/types/watchlistItem";
 
-export type TypeFilter = "" | MediaType;
-export type StatusFilter = "" | WatchlistStatus;
+export type TypeFilter = MediaType | undefined;
+export type StatusFilter = WatchlistStatus | undefined;
 export type SortBy =
 	| "latest"
 	| "oldest"
@@ -19,17 +19,17 @@ interface FiltersState {
 	limit: number;
 	setLimit: (limit: number) => void;
 
-	searchQuery: string;
-	setSearchQuery: (query: string) => void;
+	q: string | undefined;
+	setSearchQuery: (query: string | undefined) => void;
 
-	typeFilter: TypeFilter;
+	type: TypeFilter;
 	setTypeFilter: (type: TypeFilter) => void;
 
-	statusFilter: StatusFilter;
+	status: StatusFilter;
 	setStatusFilter: (status: StatusFilter) => void;
 
-	sortBy: SortBy;
-	setSortBy: (sortBy: SortBy) => void;
+	sort: SortBy;
+	setSortBy: (sort: SortBy) => void;
 }
 
 const useFilters = create<FiltersState>((set) => ({
@@ -43,24 +43,24 @@ const useFilters = create<FiltersState>((set) => ({
 		set({ page: 1, limit });
 	},
 
-	searchQuery: "",
+	q: undefined,
 	setSearchQuery: (query) => {
-		set({ searchQuery: query });
+		set({ q: query });
 	},
 
-	typeFilter: "",
+	type: undefined,
 	setTypeFilter: (type) => {
-		set({ page: 1, typeFilter: type });
+		set({ page: 1, type: type });
 	},
 
-	statusFilter: "",
+	status: undefined,
 	setStatusFilter: (status) => {
-		set({ page: 1, statusFilter: status });
+		set({ page: 1, status: status });
 	},
 
-	sortBy: "latest",
-	setSortBy: (sortBy) => {
-		set({ page: 1, sortBy });
+	sort: "latest",
+	setSortBy: (sort) => {
+		set({ page: 1, sort: sort });
 	},
 }));
 
