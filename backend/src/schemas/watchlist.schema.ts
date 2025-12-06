@@ -52,3 +52,16 @@ export const AddWatchlistSchema = z.object({
 });
 
 export type AddWatchlistBody = z.infer<typeof AddWatchlistSchema>;
+
+export const UpdateWatchlistSchema = z.object({
+	// status?
+	status: z.nativeEnum(Status).optional(),
+
+	// rating? - 0 to 10
+	rating: z.number().min(0).max(10).optional(),
+
+	// comments?
+	comments: z.string().optional(),
+});
+
+export type UpdateWatchlistBody = z.infer<typeof UpdateWatchlistSchema>;

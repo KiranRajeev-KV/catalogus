@@ -242,3 +242,38 @@ export const updateWatchlistItem = async (req: Request, res: Response) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 }
+
+// DELETE /watchlist/:id
+export const deleteWatchlistItem = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+	console.log("Error 401: Unauthorized access to delete watchlist item");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const watchlistItemId = req.params.id;
+  if (!watchlistItemId) {
+    return res.status(400).json({ error: "Invalid watchlist item ID" });
+  }
+
+  try {    
+       const deletedItem = await prisma.wishlist.deleteMany({
+         where: {
+           wishlistId: watchlistItemId,
+           userId: userId
+         }
+       });
+       
+       if (deletedItem.count === 0) {
+		console.log("Error 404: Watchlist item not found for deletion");
+          return res.status(404).json({ error: "Item not found" });
+       }
+
+    console.log(`User ${userId} deleted item ${watchlistItemId}`);
+    return res.status(200).json({ message: "Item deleted successfully", deletedItem });
+
+  } catch (error) {
+    console.error("Error deleting watchlist item:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
