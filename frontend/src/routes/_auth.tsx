@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getAuthSession } from "@/lib/auth-server";
+import { MyNavbar } from "@/components/navbar";
 
 export const Route = createFileRoute("/_auth")({
 	beforeLoad: async ({ location }) => {
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_auth")({
 function AuthLayout() {
 	return (
 		<div>
+			<MyNavbar />
 			<Outlet />
 		</div>
 	);

@@ -234,3 +234,7 @@ code {
 	animation: none;
 	mix-blend-mode: normal;
 }
+
+html {
+  scrollbar-gutter: stable;
+}
