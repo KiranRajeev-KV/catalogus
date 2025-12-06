@@ -2,7 +2,7 @@
 import type { Request, Response } from "express";
 import z from "zod";
 import { prisma } from "../db/client.js";
-import { AddWatchlistSchema, GetWatchlistSchema } from "../schemas/watchlist.schema.js";
+import { AddWatchlistSchema, GetWatchlistSchema, UpdateWatchlistSchema } from "../schemas/watchlist.schema.js";
 import { getTMDBMovieDetails, getTMDBTVDetails } from "../services/tmdb.service.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
@@ -190,6 +190,53 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 
 		console.log("Status 201: Watchlist item added successfully");
 		res.status(201).json(watchlistEntry);
+	} catch (error) {
+		console.error("Error 500: Internal server error", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}
+
+export const updateWatchlistItem = async (req: Request, res: Response) => {
+	console.log("Received PATCH /watchlist/:id request with body:", req.body);
+	// check if user is authenticated
+	const userId = req.user?.id;
+	if (!userId) {
+		console.log("Error 401: Unauthorized access to update watchlist item");
+		return res.status(401).json({ error: "Unauthorized" });
+	}
+
+	const watchlistItemId = req.params.id;
+	if (!watchlistItemId) {
+		console.log("Error 400: Invalid watchlist item ID");
+		return res.status(400).json({ error: "Invalid watchlist item ID" });
+	}
+
+	const result = UpdateWatchlistSchema.safeParse(req.body);
+	if (!result.success) {
+		console.log("Error 400: Invalid request body", result.error);
+		return res.status(400).json({
+			error: "Invalid request body",
+			details: z.treeifyError(result.error),
+		});
+	}
+
+	const { status, rating, comments } = result.data;
+
+	try {
+		// update the watchlist item
+		const updatedItem = await prisma.wishlist.update({
+			where: {
+				wishlistId: watchlistItemId,
+				userId: userId,
+			},
+			data: {
+				...(status !== undefined && { status }),
+				...(rating !== undefined && { rating }),
+				...(comments !== undefined && { comments }),
+			},
+		});
+		console.log("Status 200: Watchlist item updated successfully");
+		res.status(200).json(updatedItem);
 	} catch (error) {
 		console.error("Error 500: Internal server error", error);
 		res.status(500).json({ error: "Internal server error" });
