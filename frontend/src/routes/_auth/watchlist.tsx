@@ -3,7 +3,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { fetchWatchlist } from "@/api/axios";
-import { MyNavbar } from "@/components/navbar";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
 import useFilters from "@/stores/filtersStore";
@@ -59,7 +58,6 @@ function Watchlist() {
 
 	return (
 		<div>
-            <MyNavbar />
             <div className="container mx-auto my-8 max-w-[75%]">
                 <h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
                 <WatchlistFilters />
