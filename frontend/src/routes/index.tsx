@@ -84,7 +84,7 @@ function App() {
             </div>
           </motion.div>
 
-          {/* Main Title */}
+          {/* TITLE */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -98,7 +98,7 @@ function App() {
             </h1>
           </motion.div>
 
-          {/* Subtitle */}
+          {/* DESC */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ function App() {
             wanted to watch.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* ACTIONS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -143,7 +143,7 @@ function App() {
             </motion.div>
           </motion.div>
 
-          {/* --- POWERED BY SECTION --- */}
+          {/* POWERED BY */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

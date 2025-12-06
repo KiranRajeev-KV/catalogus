@@ -12,7 +12,7 @@ function RouteComponent() {
   return (
     <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-2 p-4 text-center">
       
-      {/* --- Animated Icon Container --- */}
+      {/* ANIMATED ICON */}
       <motion.div 
         className="relative mb-6"
         initial={{ opacity: 0, y: 20 }}
@@ -48,7 +48,7 @@ function RouteComponent() {
         </motion.div>
       </motion.div>
 
-      {/* --- Text Content --- */}
+      {/* TEXT */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -63,7 +63,7 @@ function RouteComponent() {
         </p>
       </motion.div>
 
-      {/* --- Fake Loading Bar (Visual Flair) --- */}
+      {/* LOADING BAR */}
       <motion.div 
         className="w-64 h-2 bg-secondary rounded-full mt-6 overflow-hidden"
         initial={{ opacity: 0 }}

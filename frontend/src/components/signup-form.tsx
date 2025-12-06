@@ -44,7 +44,6 @@ export function SignupForm({
           setIsLoading(false);
         },
         onSuccess: () => {
-             // Redirect handled by callbackURL, but good to have a state reset or toast
              toast.success("Account created successfully!");
         }
       },

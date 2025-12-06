@@ -176,7 +176,7 @@ function AboutPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full px-8 h-12 text-base">
-              <a href="https://github.com/kiranrajeev-kv" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/kiranrajeev-kv/catalogus" target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 w-5 h-5" /> View on GitHub
               </a>
             </Button>
