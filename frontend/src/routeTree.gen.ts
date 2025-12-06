@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthWatchlistRouteImport } from './routes/_auth/watchlist'
+import { Route as AuthStatsRouteImport } from './routes/_auth/stats'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -23,6 +25,11 @@ const SignupRoute = SignupRouteImport.update({
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -39,38 +46,58 @@ const AuthWatchlistRoute = AuthWatchlistRouteImport.update({
   path: '/watchlist',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthStatsRoute = AuthStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/stats': typeof AuthStatsRoute
   '/watchlist': typeof AuthWatchlistRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/stats': typeof AuthStatsRoute
   '/watchlist': typeof AuthWatchlistRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
+  '/about': typeof AboutRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/_auth/stats': typeof AuthStatsRoute
   '/_auth/watchlist': typeof AuthWatchlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/signin' | '/signup' | '/watchlist'
+  fullPaths: '/' | '/about' | '/signin' | '/signup' | '/stats' | '/watchlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/signup' | '/watchlist'
-  id: '__root__' | '/' | '/_auth' | '/signin' | '/signup' | '/_auth/watchlist'
+  to: '/' | '/about' | '/signin' | '/signup' | '/stats' | '/watchlist'
+  id:
+    | '__root__'
+    | '/'
+    | '/_auth'
+    | '/about'
+    | '/signin'
+    | '/signup'
+    | '/_auth/stats'
+    | '/_auth/watchlist'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  AboutRoute: typeof AboutRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
 }
@@ -89,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -112,14 +146,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthWatchlistRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_auth/stats': {
+      id: '/_auth/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof AuthStatsRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
 interface AuthRouteChildren {
+  AuthStatsRoute: typeof AuthStatsRoute
   AuthWatchlistRoute: typeof AuthWatchlistRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthStatsRoute: AuthStatsRoute,
   AuthWatchlistRoute: AuthWatchlistRoute,
 }
 
@@ -128,6 +171,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  AboutRoute: AboutRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
 }
