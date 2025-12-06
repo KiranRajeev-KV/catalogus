@@ -66,4 +66,9 @@ export const updateWatchlistItem = async (
 		comments: updatedComments,
 	});
 	return response.data;
-}
+};
+
+export const deleteWatchlistItem = async (wishlistId: string) => {
+	const response = await api.delete(`/watchlist/${wishlistId}`);
+	return response.data;
+};

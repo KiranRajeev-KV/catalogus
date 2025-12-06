@@ -22,13 +22,19 @@ import {
 
 interface MediaGridCardProps {
 	item: WatchlistItem;
-	onEdit?: (id: number) => void;
-	onDelete?: (id: number) => void;
+	onEdit?: (id: string) => void;
+	onDelete?: (id: string) => void;
+	onComplete?: (id: string) => void;
 }
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export function MediaGridCard({ item, onEdit, onDelete }: MediaGridCardProps) {
+export function MediaGridCard({
+	item,
+	onEdit,
+	onDelete,
+	onComplete,
+}: MediaGridCardProps) {
 	const { mediaItem, status, rating } = item;
 	const { metadata, title, type } = mediaItem;
 
@@ -98,7 +104,7 @@ export function MediaGridCard({ item, onEdit, onDelete }: MediaGridCardProps) {
 										className="h-8 w-8 rounded-full hover:bg-green-500/20 hover:text-green-400 text-white hover:scale-110 transition-colors"
 										onClick={(e) => {
 											e.stopPropagation();
-											// TODO: Mark as complete action
+											onComplete?.(item.wishlistId);
 										}}
 									>
 										<CircleCheckBig className="h-4 w-4" />
@@ -120,7 +126,7 @@ export function MediaGridCard({ item, onEdit, onDelete }: MediaGridCardProps) {
 										className="h-8 w-8 rounded-full hover:bg-blue-500/20 text-white hover:text-blue-400 transition-colors hover:scale-110 ease-in-out"
 										onClick={(e) => {
 											e.stopPropagation();
-											onEdit?.(item.mediaItemId);
+											onEdit?.(item.wishlistId);
 										}}
 									>
 										<Pencil className="h-4 w-4" />
@@ -141,7 +147,7 @@ export function MediaGridCard({ item, onEdit, onDelete }: MediaGridCardProps) {
 										className="h-8 w-8 rounded-full hover:bg-red-500/20 hover:text-red-400 text-white transition-colors hover:scale-110 ease-in-out"
 										onClick={(e) => {
 											e.stopPropagation();
-											onDelete?.(item.mediaItemId);
+											onDelete?.(item.wishlistId);
 										}}
 									>
 										<Trash2 className="h-4 w-4" />
