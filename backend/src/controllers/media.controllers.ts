@@ -35,5 +35,9 @@ export const searchMedia = async (req: Request, res: Response) => {
 			console.log(`Found ${tvshows.length} TV shows for query "${q}"`);
 			return res.status(200).json({ results: tvshows });
 		}
+		case "ANIME": {
+			// TODO: implement ANILIST search
+			return res.status(200).json({ results: [] });
+		}
 	}
 };

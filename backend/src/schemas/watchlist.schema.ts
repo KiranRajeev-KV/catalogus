@@ -33,7 +33,6 @@ export const GetWatchlistSchema = z.object({
 
 export type GetWatchlistQuery = z.infer<typeof GetWatchlistSchema>;
 
-
 export const AddWatchlistSchema = z.object({
 	// apiId - unique identifier from external API
 	apiId: z.string().min(1),

@@ -1,9 +1,11 @@
 // frontend/src/components/watchlist-components/searchDialog.tsx
 
-import { useState } from "react";
-import { Search, Loader2, Plus, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Plus, Search, X } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { addItemToWatchlist, searchMedia } from "@/api/axios";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -11,6 +13,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -18,11 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MediaType, TMDBSearchResult } from "@/types/mediaItem";
-import { searchMedia, addItemToWatchlist } from "@/api/axios";
+import type { MediaType, TMDBSearchResult } from "@/types/mediaItem";
 
 interface SearchResponse {
 	results: TMDBSearchResult[];
@@ -86,7 +86,7 @@ export function WatchlistSearchModal({
 			setResults([]);
 			setHasSearched(false);
 		},
-		onError: (error: any) => {
+		onError: (error) => {
 			if (error.response?.status === 409) {
 				toast.info("This is already in your watchlist");
 			} else {
@@ -153,6 +153,7 @@ export function WatchlistSearchModal({
 						/>
 						{query && (
 							<button
+								type="button"
 								onClick={() => {
 									setHasSearched(false);
 									setResults([]);
@@ -199,6 +200,8 @@ export function WatchlistSearchModal({
 
 										{/* Hover Overlay with Add Button */}
 										<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+											{/* biome-ignore lint/a11y/useKeyWithClickEvents: its fine */}
+											{/* biome-ignore lint/a11y/noStaticElementInteractions: same as above */}
 											<div
 												className="bg-primary text-primary-foreground rounded-full p-2 shadow-lg transform scale-90 group-hover:scale-100 transition-transform cursor-pointer"
 												onClick={(e) => {

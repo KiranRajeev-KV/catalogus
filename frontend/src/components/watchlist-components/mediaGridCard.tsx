@@ -1,18 +1,18 @@
 // frontend/src/components/watchlist-components/mediaGridCard.tsx
 import {
-	Pencil,
-	Trash2,
-	Star,
 	Calendar,
-	Tv,
-	Film,
-	Dot,
 	CircleCheckBig,
+	Dot,
+	Film,
+	Pencil,
+	Star,
+	Trash2,
+	Tv,
 } from "lucide-react";
-import type { WatchlistItem } from "@/types/watchlistItem";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type { WatchlistItem } from "@/types/watchlistItem";
 import {
 	Tooltip,
 	TooltipContent,

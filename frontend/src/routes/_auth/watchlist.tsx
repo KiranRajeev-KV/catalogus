@@ -2,12 +2,12 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { fetchWatchlist } from "@/api/axios";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
-import useFilters from "@/stores/filtersStore";
-import { useEffect } from "react";
 import { WatchlistPagination } from "@/components/watchlist-components/watchlistPagination";
+import useFilters from "@/stores/filtersStore";
 
 export const Route = createFileRoute("/_auth/watchlist")({
 	component: Watchlist,
@@ -39,9 +39,10 @@ function Watchlist() {
 		placeholderData: keepPreviousData,
 	});
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll to top on page change
 	useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [filterStore.page]);
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	}, [filterStore.page]);
 
 	if (isError)
 		return (
@@ -58,30 +59,32 @@ function Watchlist() {
 
 	return (
 		<div>
-            <div className="container mx-auto my-8 max-w-[75%]">
-                <h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
-                <WatchlistFilters />
-                
-                {isFetching && (
-                    <div className="text-sm text-muted-foreground mb-2 animate-pulse">Updating...</div>
-                )}
+			<div className="container mx-auto my-8 max-w-[75%]">
+				<h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
+				<WatchlistFilters />
 
-                {!data?.data || data.data.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                        <p className="text-lg">Your watchlist is empty</p>
-                    </div>
-                ) : (
-                    <>
-                        <WatchlistGrid items={data.data} />
-                        
-                        <WatchlistPagination 
-                            currentPage={data.pagination.page}
-                            totalPages={data.pagination.totalPages}
-                            onPageChange={(newPage) => filterStore.setPage(newPage)}
-                        />
-                    </>
-                )}
-            </div>
-        </div>
+				{isFetching && (
+					<div className="text-sm text-muted-foreground mb-2 animate-pulse">
+						Updating...
+					</div>
+				)}
+
+				{!data?.data || data.data.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+						<p className="text-lg">Your watchlist is empty</p>
+					</div>
+				) : (
+					<>
+						<WatchlistGrid items={data.data} />
+
+						<WatchlistPagination
+							currentPage={data.pagination.page}
+							totalPages={data.pagination.totalPages}
+							onPageChange={(newPage) => filterStore.setPage(newPage)}
+						/>
+					</>
+				)}
+			</div>
+		</div>
 	);
 }

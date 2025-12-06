@@ -2,8 +2,6 @@ import axios from "axios";
 import { ApiSource, Type } from "../generated/prisma/client.js";
 import "dotenv/config";
 import type { TMDBMovie, TMDBTV } from "../types/tmdb.js";
-import { release } from "node:os";
-import { ta } from "zod/locales";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -72,7 +70,7 @@ export async function searchTMDBTV(query: string) {
 // get movie details from TMDB by apiId
 export async function getTMDBMovieDetails(apiId: string) {
 	const movieDetails = await api.get(`/movie/${apiId}`);
-	
+
 	const structuredDetails = {
 		title: movieDetails.data.title,
 		type: Type.MOVIE,
@@ -82,7 +80,9 @@ export async function getTMDBMovieDetails(apiId: string) {
 			// essential fields
 			posterPath: movieDetails.data.poster_path,
 			releaseDate: movieDetails.data.release_date,
-			genres: movieDetails.data.genres.map((g: { id: number; name: string }) => g.name),
+			genres: movieDetails.data.genres.map(
+				(g: { id: number; name: string }) => g.name,
+			),
 			overview: movieDetails.data.overview,
 			runtime: movieDetails.data.runtime,
 			rating: movieDetails.data.vote_average,
@@ -96,7 +96,7 @@ export async function getTMDBMovieDetails(apiId: string) {
 			imdbId: movieDetails.data.imdb_id,
 			voteCount: movieDetails.data.vote_count,
 		},
-	}
+	};
 
 	return structuredDetails;
 }
@@ -104,7 +104,7 @@ export async function getTMDBMovieDetails(apiId: string) {
 // get TV show details from TMDB by apiId
 export async function getTMDBTVDetails(apiId: string) {
 	const tvDetails = await api.get(`/tv/${apiId}`);
-	
+
 	const structuredDetails = {
 		title: tvDetails.data.name,
 		type: Type.TV,
@@ -115,7 +115,9 @@ export async function getTMDBTVDetails(apiId: string) {
 			posterPath: tvDetails.data.poster_path,
 			episodeRunTime: tvDetails.data.episode_run_time,
 			releaseDate: tvDetails.data.first_air_date,
-			genres: tvDetails.data.genres.map((g: { id: number; name: string }) => g.name),
+			genres: tvDetails.data.genres.map(
+				(g: { id: number; name: string }) => g.name,
+			),
 			endDatate: tvDetails.data.last_air_date,
 			totalEpisodes: tvDetails.data.number_of_episodes,
 			totalSeasons: tvDetails.data.number_of_seasons,
@@ -133,7 +135,7 @@ export async function getTMDBTVDetails(apiId: string) {
 			tagline: tvDetails.data.tagline,
 			voteCount: tvDetails.data.vote_count,
 		},
-	}
+	};
 
 	return structuredDetails;
 }

@@ -2,8 +2,15 @@
 import type { Request, Response } from "express";
 import z from "zod";
 import { prisma } from "../db/client.js";
-import { AddWatchlistSchema, GetWatchlistSchema, UpdateWatchlistSchema } from "../schemas/watchlist.schema.js";
-import { getTMDBMovieDetails, getTMDBTVDetails } from "../services/tmdb.service.js";
+import {
+	AddWatchlistSchema,
+	GetWatchlistSchema,
+	UpdateWatchlistSchema,
+} from "../schemas/watchlist.schema.js";
+import {
+	getTMDBMovieDetails,
+	getTMDBTVDetails,
+} from "../services/tmdb.service.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
 export const getWatchlist = async (req: Request, res: Response) => {
@@ -132,7 +139,9 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 
 		if (existingItem) {
 			console.log("Error 409: Item already exists in watchlist");
-			return res.status(409).json({ error: "Item already exists in watchlist" });
+			return res
+				.status(409)
+				.json({ error: "Item already exists in watchlist" });
 		}
 
 		// 2. fetch media item details from external API
@@ -156,7 +165,9 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 
 		if (!details) {
 			console.log("Error 500: Failed to fetch media item details");
-			return res.status(500).json({ error: "Failed to fetch media item details" });
+			return res
+				.status(500)
+				.json({ error: "Failed to fetch media item details" });
 		}
 
 		// 3. create or connect the media item in MediaItem table
@@ -168,12 +179,14 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 				},
 			},
 			update: {},
-			create: details
+			create: details,
 		});
 
 		if (!mediaItem) {
 			console.log("Error 500: Failed to create or connect media item");
-			return res.status(500).json({ error: "Failed to create or connect media item" });
+			return res
+				.status(500)
+				.json({ error: "Failed to create or connect media item" });
 		}
 
 		// 4. create the watchlist entry
@@ -194,7 +207,7 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 		console.error("Error 500: Internal server error", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
-}
+};
 
 export const updateWatchlistItem = async (req: Request, res: Response) => {
 	console.log("Received PATCH /watchlist/:id request with body:", req.body);
@@ -241,39 +254,40 @@ export const updateWatchlistItem = async (req: Request, res: Response) => {
 		console.error("Error 500: Internal server error", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
-}
+};
 
 // DELETE /watchlist/:id
 export const deleteWatchlistItem = async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  if (!userId) {
-	console.log("Error 401: Unauthorized access to delete watchlist item");
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+	const userId = req.user?.id;
+	if (!userId) {
+		console.log("Error 401: Unauthorized access to delete watchlist item");
+		return res.status(401).json({ error: "Unauthorized" });
+	}
 
-  const watchlistItemId = req.params.id;
-  if (!watchlistItemId) {
-    return res.status(400).json({ error: "Invalid watchlist item ID" });
-  }
+	const watchlistItemId = req.params.id;
+	if (!watchlistItemId) {
+		return res.status(400).json({ error: "Invalid watchlist item ID" });
+	}
 
-  try {    
-       const deletedItem = await prisma.wishlist.deleteMany({
-         where: {
-           wishlistId: watchlistItemId,
-           userId: userId
-         }
-       });
-       
-       if (deletedItem.count === 0) {
-		console.log("Error 404: Watchlist item not found for deletion");
-          return res.status(404).json({ error: "Item not found" });
-       }
+	try {
+		const deletedItem = await prisma.wishlist.deleteMany({
+			where: {
+				wishlistId: watchlistItemId,
+				userId: userId,
+			},
+		});
 
-    console.log(`User ${userId} deleted item ${watchlistItemId}`);
-    return res.status(200).json({ message: "Item deleted successfully", deletedItem });
+		if (deletedItem.count === 0) {
+			console.log("Error 404: Watchlist item not found for deletion");
+			return res.status(404).json({ error: "Item not found" });
+		}
 
-  } catch (error) {
-    console.error("Error deleting watchlist item:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+		console.log(`User ${userId} deleted item ${watchlistItemId}`);
+		return res
+			.status(200)
+			.json({ message: "Item deleted successfully", deletedItem });
+	} catch (error) {
+		console.error("Error deleting watchlist item:", error);
+		return res.status(500).json({ error: "Internal server error" });
+	}
 };

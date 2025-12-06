@@ -16,6 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { WatchlistSearchModal } from "@/components/watchlist-components/searchDialog";
 import useFilters, {
 	type SortBy,
 	type StatusFilter,
@@ -26,7 +27,6 @@ import {
 	ToggleGroupItem,
 } from "../animate-ui/components/radix/toggle-group";
 import { Button } from "../ui/button";
-import { WatchlistSearchModal } from "@/components/watchlist-components/searchDialog";
 
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { getAuthSession } from "@/lib/auth-server";
 import { MyNavbar } from "@/components/navbar";
+import { getAuthSession } from "@/lib/auth-server";
 
 export const Route = createFileRoute("/_auth")({
 	beforeLoad: async ({ location }) => {

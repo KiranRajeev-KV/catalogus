@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { getWatchlist, addToWatchlist, updateWatchlistItem, deleteWatchlistItem } from "../controllers/watchlist.controller.js";
+import {
+	addToWatchlist,
+	deleteWatchlistItem,
+	getWatchlist,
+	updateWatchlistItem,
+} from "../controllers/watchlist.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 
 const router: Router = Router();
