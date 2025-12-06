@@ -39,7 +39,12 @@ function Watchlist() {
 		placeholderData: keepPreviousData,
 	});
 
-	if (isError) return <div>Error loading watchlist: {error.message}</div>;
+	if (isError)
+		return (
+			<div className="items-center align-middle">
+				Error loading watchlist: {error.message}
+			</div>
+		);
 	if (isLoading)
 		return (
 			<div className="flex h-screen items-center justify-center">

@@ -15,7 +15,7 @@ export function WatchlistGrid({ items }: WatchlistGridProps) {
 					delay={0.05 * items.indexOf(item) * 0.25}
 					inView
 				>
-					<MediaGridCard key={item.wishlistId} item={item} />
+					<MediaGridCard key={item.wishlistId} item={item} onEdit={() => {}} onDelete={() => {}} />
 				</BlurFade>
 			))}
 		</div>

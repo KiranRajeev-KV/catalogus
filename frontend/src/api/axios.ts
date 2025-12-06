@@ -53,3 +53,17 @@ export const addItemToWatchlist = async (data: {
 	const response = await api.post("/watchlist", data);
 	return response.data;
 };
+
+export const updateWatchlistItem = async (
+	wishlistId: string,
+	updatedStatus?: StatusFilter,
+	updatedRating?: number,
+	updatedComments?: string,
+) => {
+	const response = await api.patch(`/watchlist/${wishlistId}`, {
+		status: updatedStatus,
+		rating: updatedRating,
+		comments: updatedComments,
+	});
+	return response.data;
+}
