@@ -179,7 +179,7 @@ export function WatchlistSearchModal({
                 </div>
 
                 {/* --- RESULTS AREA --- */}
-                <ScrollArea className="flex-1 h-[500px] p-6 bg-muted/10">
+                <ScrollArea className="flex-1 h-[500px] p-6 bg-muted/10 overflow-y-auto">
                     {results.length > 0 ? (
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-4 gap-y-8 pb-4">
                             {results.map((item) => (
