@@ -199,10 +199,12 @@ export function MediaGridCard({
 					</div>
 
 					{/* User Rating */}
-					<div className="flex items-center gap-1 text-amber-500 font-medium text-base">
-						<Star className="h-4 w-4 fill-current" />
-						<span>{rating ? rating : "-"}</span>
-					</div>
+					{rating > 0 && (
+						<div className="flex items-center gap-1 text-amber-500 font-medium text-base">
+							<Star className="h-4 w-4 fill-current" />
+							<span>{rating}</span>
+						</div>
+					)}
 				</div>
 			</CardContent>
 			{/* <CardFooter className="p-0 mt-2 px-4 pb-4">
