@@ -1,4 +1,5 @@
 services:
+  # Primary Database
   postgres:
     image: postgres:latest
     container_name: catalogus-db
@@ -9,7 +10,46 @@ services:
       POSTGRES_PASSWORD: newpassword
       POSTGRES_DB: catalogus
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/18/data
+    networks:
+      - app_network
+    restart: on-failure
+
+  # Drizzle Studio Gateway
+  # Access Studio locally via: https://local.drizzle.studio
+  drizzle-gate:
+    image: ghcr.io/drizzle-team/gateway:latest
+    container_name: catalogus-drizzle-gateway
+    ports:
+      - "4983:4983"
+    environment:
+      DATABASE_URL: postgresql://postgres:newpassword@postgres:5432/catalogus
+      STORE_PATH: /app
+    volumes:
+      - drizzle_gateway_data:/app
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+    restart: on-failure
+
+  # Caching Layer
+  redis:
+    image: redis:alpine
+    container_name: catalogus-cache
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redisdata:/data
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
   pgdata:
+  redisdata:
+  drizzle_gateway_data:

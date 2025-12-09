@@ -3,6 +3,10 @@ import { ApiSource, Type } from "../generated/prisma/client.js";
 import "dotenv/config";
 import type { TMDBMovie, TMDBTV } from "../types/tmdb.js";
 import axiosRetry from "axios-retry";
+import { cache } from "./cache.service.js";
+
+const getCacheKey = (type: string, query: string) =>
+	`search:${type}:${query.toLowerCase().trim()}`;
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -16,16 +20,25 @@ const api = axios.create({
 });
 
 axiosRetry(api, {
-  retries: 3,
-  retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) =>
-    error.code === "ECONNRESET" ||
-    axiosRetry.isNetworkError(error) ||
-    axiosRetry.isRetryableError(error),
+	retries: 3,
+	retryDelay: axiosRetry.exponentialDelay,
+	retryCondition: (error) =>
+		error.code === "ECONNRESET" ||
+		axiosRetry.isNetworkError(error) ||
+		axiosRetry.isRetryableError(error),
 });
 
 // search movies from TMDB
 export async function searchTMDBMovie(query: string) {
+	const cacheKey = getCacheKey("MOVIE", query);
+
+	const cachedResult = await cache.get(cacheKey);
+	if (cachedResult) {
+		console.log(`[CACHE HIT] Serving "${query}" from Redis`);
+		return cachedResult;
+	}
+	console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
+
 	const searchResults = await api.get(`/search/movie`, {
 		params: {
 			query: query,
@@ -49,11 +62,22 @@ export async function searchTMDBMovie(query: string) {
 		}),
 	);
 
+	await cache.set(cacheKey, structuredResults, 86400); // cache for 24 hours
+
 	return structuredResults;
 }
 
 // search TV shows from TMDB
 export async function searchTMDBTV(query: string) {
+	const cacheKey = getCacheKey("TV", query);
+
+	const cachedResult = await cache.get(cacheKey);
+	if (cachedResult) {
+		console.log(`[CACHE HIT] Serving "${query}" from Redis`);
+		return cachedResult;
+	}
+	console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
+
 	const searchResults = await api.get(`/search/tv`, {
 		params: {
 			query: query,
@@ -75,11 +99,21 @@ export async function searchTMDBTV(query: string) {
 		release_date: item.first_air_date,
 	}));
 
+	await cache.set(cacheKey, structuredResults, 86400);
+
 	return structuredResults;
 }
 
 // get movie details from TMDB by apiId
 export async function getTMDBMovieDetails(apiId: string) {
+	const cacheKey = `movie:${apiId}`;
+	const cachedResult = await cache.get(cacheKey);
+	if (cachedResult) {
+		console.log(`[CACHE HIT] Serving movie ID "${apiId}" from Redis`);
+		return cachedResult;
+	}
+	console.log(`[CACHE MISS] Fetching movie ID "${apiId}" from TMDB`);
+
 	const movieDetails = await api.get(`/movie/${apiId}`);
 
 	const structuredDetails = {
@@ -109,11 +143,22 @@ export async function getTMDBMovieDetails(apiId: string) {
 		},
 	};
 
+	await cache.set(cacheKey, structuredDetails, 86400);
+
 	return structuredDetails;
 }
 
 // get TV show details from TMDB by apiId
 export async function getTMDBTVDetails(apiId: string) {
+	const cacheKey = `tv:${apiId}`;
+
+	const cachedResult = await cache.get(cacheKey);
+	if (cachedResult) {
+		console.log(`[CACHE HIT] Serving TV ID "${apiId}" from Redis`);
+		return cachedResult;
+	}
+	console.log(`[CACHE MISS] Fetching TV ID "${apiId}" from TMDB`);
+
 	const tvDetails = await api.get(`/tv/${apiId}`);
 
 	const structuredDetails = {
@@ -147,6 +192,8 @@ export async function getTMDBTVDetails(apiId: string) {
 			voteCount: tvDetails.data.vote_count,
 		},
 	};
+
+	await cache.set(cacheKey, structuredDetails, 86400);
 
 	return structuredDetails;
 }
