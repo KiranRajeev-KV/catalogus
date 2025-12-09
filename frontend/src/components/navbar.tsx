@@ -68,7 +68,7 @@ export function MyNavbar() {
 
 				{/* ACTIONS */}
 				<div className="flex items-center gap-4 ml-auto">
-					<AnimatedThemeToggler />
+					{/* <AnimatedThemeToggler /> */}
 
 					{/* Auth Logic */}
 					<div className="min-w-[140px] flex justify-end">
