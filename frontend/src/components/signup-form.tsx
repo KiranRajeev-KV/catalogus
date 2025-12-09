@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate, } from "@tanstack/react-router";
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -23,6 +23,8 @@ export function SignupForm({ className }: { className?: string }) {
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
+	const navigate = useNavigate();
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
@@ -41,6 +43,7 @@ export function SignupForm({ className }: { className?: string }) {
 				},
 				onSuccess: () => {
 					toast.success("Account created successfully!");
+					navigate({to: "/watchlist"})
 				},
 			},
 		);
