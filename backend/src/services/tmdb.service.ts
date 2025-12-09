@@ -15,13 +15,15 @@ const api = axios.create({
 });
 
 axiosRetry(api, {
-  retries: 3, // number of retries
-  retryDelay: axiosRetry.exponentialDelay, // backoff strategy
-  retryCondition: (error) => {
-	// retry on network errors or 5xx responses
-	return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-		   (error.response?.status ?? 0) >= 500;
-  },
+	retries: 3, // number of retries
+	retryDelay: axiosRetry.exponentialDelay, // backoff strategy
+	retryCondition: (error) => {
+		// retry on network errors or 5xx responses
+		return (
+			axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+			(error.response?.status ?? 0) >= 500
+		);
+	},
 });
 
 // search movies from TMDB

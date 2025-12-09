@@ -11,6 +11,7 @@ import {
 	getTMDBMovieDetails,
 	getTMDBTVDetails,
 } from "../services/tmdb.service.js";
+import { ApiSource } from "../generated/prisma/enums.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
 export const getWatchlist = async (req: Request, res: Response) => {
@@ -144,56 +145,75 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 				.json({ error: "Item already exists in watchlist" });
 		}
 
-		// 2. fetch media item details from external API
-		// movie & tv calls TMDB, anime calls Anilist
-		let details: any;
-		switch (type) {
-			case "MOVIE": {
-				details = await getTMDBMovieDetails(apiId);
-				break;
-			}
-			case "TV": {
-				details = await getTMDBTVDetails(apiId);
-				break;
-			}
-			case "ANIME": {
-				// TODO: implement Anilist service
-				details = {};
-				break;
-			}
-		}
+		const apiSource = type === "ANIME" ? ApiSource.ANILIST : ApiSource.TMDB;
 
-		if (!details) {
-			console.log("Error 500: Failed to fetch media item details");
-			return res
-				.status(500)
-				.json({ error: "Failed to fetch media item details" });
-		}
-
-		// 3. create or connect the media item in MediaItem table
-		const mediaItem = await prisma.mediaItem.upsert({
+		const existingMedia = await prisma.mediaItem.findUnique({
 			where: {
-				apiSource_apiId: {
-					apiId: apiId,
-					apiSource: "TMDB",
-				},
+				apiSource_apiId: { apiId: apiId, apiSource: apiSource },
 			},
-			update: {},
-			create: details,
 		});
 
-		if (!mediaItem) {
-			console.log("Error 500: Failed to create or connect media item");
-			return res
-				.status(500)
-				.json({ error: "Failed to create or connect media item" });
+		let mediaItemId;
+
+		const isStale = existingMedia
+			? new Date().getTime() - existingMedia.updatedAt.getTime() >
+				7 * 24 * 60 * 60 * 1000
+			: true;
+
+		if (existingMedia && !isStale) {
+			// CASE A: We have it, and it's fresh.
+			// SKIP THE EXTERNAL API CALL COMPLETELY.
+			console.log("Using cached fresh metadata from DB");
+			mediaItemId = existingMedia.itemId;
+		} else {
+			// CASE B: It's missing OR it's old.
+			// Fetch from TMDB and update/create the central record.
+			console.log("Fetching fresh metadata from TMDB");
+
+			// 2. fetch media item details from external API
+			// movie & tv calls TMDB, anime calls Anilist
+			let details: any;
+			switch (type) {
+				case "MOVIE": {
+					details = await getTMDBMovieDetails(apiId);
+					break;
+				}
+				case "TV": {
+					details = await getTMDBTVDetails(apiId);
+					break;
+				}
+				case "ANIME": {
+					// TODO: implement Anilist service
+					console.log("Error 501: Anime support not implemented yet");
+					return res.status(501).json({ error: "Anime support coming soon" });
+				}
+			}
+
+			if (!details) {
+				console.log("Error 500: Failed to fetch media item details");
+				return res
+					.status(500)
+					.json({ error: "Failed to fetch media item details" });
+			}
+
+			const updatedMedia = await prisma.mediaItem.upsert({
+				where: {
+					apiSource_apiId: { apiId: apiId, apiSource: apiSource },
+				},
+				update: {
+					metadata: details.metadata, // Update for everyone!
+					// Prisma automatically updates 'updatedAt'
+				},
+				create: details,
+			});
+			mediaItemId = updatedMedia.itemId;
 		}
 
 		// 4. create the watchlist entry
 		const watchlistEntry = await prisma.wishlist.create({
 			data: {
 				userId: userId,
-				mediaItemId: mediaItem.itemId,
+				mediaItemId: mediaItemId,
 				status: status,
 				rating: rating,
 				comments: comments,
