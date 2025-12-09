@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { addItemToWatchlist, searchMedia } from "@/api/axios";
 import { Button } from "@/components/ui/button";
+import { useDebouncedCallback } from '@tanstack/react-pacer'
 import {
     Dialog,
     DialogContent,
@@ -43,6 +44,13 @@ export function WatchlistSearchModal({
 
     const queryClient = useQueryClient();
     const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w300";
+
+    const debouncedHandleSearch = useDebouncedCallback(
+    () => {
+        handleSearch();
+    },
+    { wait: 500 }
+    );
 
     const handleSearch = async () => {
         if (!query.trim()) return;
@@ -121,7 +129,10 @@ export function WatchlistSearchModal({
                     {/* Search Bar Controls */}
                     <div className="flex gap-3">
                         {/* Type Selector */}
-                        <Select value={type} onValueChange={(val: MediaType) => setType(val)}>
+                        <Select value={type} onValueChange={(val: MediaType) => {
+                            setType(val);
+                            debouncedHandleSearch();
+                        }}>
                             <SelectTrigger size="default" className="w-[140px] !h-9 bg-muted/50 border-transparent focus:ring-primary/20 hover:bg-muted/80 transition-colors rounded-xl">
                                 <div className="flex items-center gap-2 ">
                                     {type === "MOVIE" && <Film className="w-4 h-4 text-primary" />}
@@ -143,7 +154,10 @@ export function WatchlistSearchModal({
                             <Input
                                 placeholder={`Search for a ${type === "TV" ? "TV Show" : type.toLowerCase()}...`}
                                 value={query}
-                                onChange={(e) => setQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setQuery(e.target.value)
+                                    debouncedHandleSearch()
+                                }}
                                 onKeyDown={handleKeyDown}
                                 className="h-9 pl-10 pr-10 bg-muted/50 border-transparent  rounded-xl transition-all"
                                 autoFocus
