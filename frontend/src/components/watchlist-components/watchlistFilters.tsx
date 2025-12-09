@@ -64,7 +64,7 @@ export function WatchlistFilters() {
 			<div className="flex flex-row space-x-2 items-center">
 				{/* Add to watchlist button */}
 				<WatchlistSearchModal>
-					<Button className="bg-primary rounded-md shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
+					<Button className="bg-primary rounded-lg shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
 						<Plus className="size-6 text-primary-foreground" />
 					</Button>
 				</WatchlistSearchModal>
@@ -72,9 +72,9 @@ export function WatchlistFilters() {
 				{/* Search Bar */}
 				<div className="relative flex items-center">
 					<Button
-						onClick={() => setSearchOpen((o) => !o)}
+						onClick={() => {setSearchOpen((o) => !o); filters.setSearchQuery(undefined)}}
 						variant={"outline"}
-						className="p-2 focus:outline-none border-input rounded-md shadow-xs text-base hover:bg-accent hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150"
+						className="p-2 focus:outline-none border-input rounded-lg shadow-xs text-base hover:bg-accent hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150"
 					>
 						<Search className="w-6 h-6 text-foreground" />
 						Search
