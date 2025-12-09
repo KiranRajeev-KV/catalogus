@@ -9,21 +9,19 @@ const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 const api = axios.create({
 	baseURL: TMDB_BASE_URL,
+	timeout: 10000,
 	params: {
 		api_key: TMDB_API_KEY,
 	},
 });
 
 axiosRetry(api, {
-	retries: 3, // number of retries
-	retryDelay: axiosRetry.exponentialDelay, // backoff strategy
-	retryCondition: (error) => {
-		// retry on network errors or 5xx responses
-		return (
-			axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-			(error.response?.status ?? 0) >= 500
-		);
-	},
+  retries: 3,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) =>
+    error.code === "ECONNRESET" ||
+    axiosRetry.isNetworkError(error) ||
+    axiosRetry.isRetryableError(error),
 });
 
 // search movies from TMDB

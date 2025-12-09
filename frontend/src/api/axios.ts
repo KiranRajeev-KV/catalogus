@@ -36,13 +36,17 @@ export async function fetchWatchlist(
 }
 
 export async function searchMedia(type: MediaType, query: string) {
-	const response = await api.get("/media/search", {
-		params: {
-			type: type,
-			q: query,
-		},
-	});
-	return response.data;
+	try {
+		const response = await api.get("/media/search", {
+			params: {
+				type: type,
+				q: query,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Error searching media:", error);
+	}
 }
 
 export const addItemToWatchlist = async (data: {
