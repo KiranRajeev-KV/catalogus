@@ -19,6 +19,7 @@
 		"@prisma/adapter-pg": "^7.0.1",
 		"@prisma/client": "^7.0.1",
 		"axios": "^1.13.2",
+		"axios-retry": "^4.5.0",
 		"better-auth": "^1.4.3",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",

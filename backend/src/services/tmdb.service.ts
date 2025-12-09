@@ -2,6 +2,7 @@ import axios from "axios";
 import { ApiSource, Type } from "../generated/prisma/client.js";
 import "dotenv/config";
 import type { TMDBMovie, TMDBTV } from "../types/tmdb.js";
+import axiosRetry from "axios-retry";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -11,6 +12,16 @@ const api = axios.create({
 	params: {
 		api_key: TMDB_API_KEY,
 	},
+});
+
+axiosRetry(api, {
+  retries: 3, // number of retries
+  retryDelay: axiosRetry.exponentialDelay, // backoff strategy
+  retryCondition: (error) => {
+	// retry on network errors or 5xx responses
+	return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+		   (error.response?.status ?? 0) >= 500;
+  },
 });
 
 // search movies from TMDB
