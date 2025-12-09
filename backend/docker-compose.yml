@@ -45,6 +45,20 @@ services:
     networks:
       - app_network
 
+  insight:
+      image: redislabs/redisinsight:latest
+      container_name: catalogus-insight
+      restart: on-failure
+      ports:
+        - "5540:5540"
+      depends_on:
+        - redis
+      environment:
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+      networks:
+        - app_network
+
 networks:
   app_network:
     driver: bridge
