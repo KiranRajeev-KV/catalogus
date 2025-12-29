@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: newpassword
       POSTGRES_DB: catalogus
     volumes:
-      - pgdata:/var/lib/postgresql/18/data
+      - pgdata:/var/lib/postgresql
     networks:
       - app_network
     restart: on-failure
