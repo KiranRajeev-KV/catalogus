@@ -1,16 +1,16 @@
 meta {
-  name: search
+  name: /search
   type: http
   seq: 1
 }
 
 get {
-  url: http://localhost:8080/api/items/search?q=Titan&type=MOVIE
+  url: http://localhost:8080/api/media/search?type=MOVIE&q=Inception
   body: none
   auth: inherit
 }
 
 params:query {
-  q: Titan
   type: MOVIE
+  q: Inception
 }

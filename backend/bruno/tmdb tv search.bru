@@ -1,13 +1,17 @@
 meta {
-  name: tmdb movie
+  name: tmdb tv search
   type: http
-  seq: 10
+  seq: 13
 }
 
 get {
-  url: https://api.themoviedb.org/3/tv/66633
+  url: https://api.themoviedb.org/3/search/tv?query=rookie
   body: none
   auth: inherit
+}
+
+params:query {
+  query: rookie
 }
 
 headers {
