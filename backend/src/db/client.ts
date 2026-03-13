@@ -10,7 +10,7 @@ const adapter = new PrismaPg({
 export const prisma = new PrismaClient({ adapter }).$extends({
 	query: {
 		wishlist: {
-			async update({ args, query }) {
+			async update({ args, query }: { args: any; query: any }) {
 				// If status is being updated, set completedAt accordingly
 				if (args.data.status) {
 					if (args.data.status === "COMPLETED") {

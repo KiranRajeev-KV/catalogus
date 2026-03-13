@@ -215,8 +215,8 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 				userId: userId,
 				mediaItemId: mediaItemId,
 				status: status,
-				rating: rating,
-				comments: comments,
+				...(rating !== undefined && { rating }),
+				...(comments !== undefined && { comments }),
 			},
 			include: { mediaItem: true },
 		});
