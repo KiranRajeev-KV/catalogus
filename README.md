@@ -4,20 +4,25 @@ A personal media tracker for movies, TV shows, and anime.
 
 ## Tech Stack
 
-- **Frontend:** React 19, Vite, TanStack Router, TanStack Query, Tailwind CSS, Radix UI
-- **Backend:** Express.js, TypeScript, Prisma ORM, PostgreSQL
+- **Frontend:** React 19, Vite, TanStack Start (SSR), TanStack Router, TanStack Query, Zustand, Tailwind CSS, Radix UI, Framer Motion
+- **Backend:** Express.js 5, TypeScript, Prisma ORM, PostgreSQL
 - **Auth:** better-auth
+- **Caching:** Redis (ioredis)
 - **External Data:** TMDB (The Movie Database)
 
 ## Features
 
-- User authentication (signup/signin)
+- User authentication (signup/signin via better-auth)
 - Track movies, TV shows, and anime
-- Search media via TMDB
+- Search media via TMDB with debounced input
 - Manage watchlist with statuses (Watching, Completed, On Hold, Dropped, Plan to Watch)
-- Rate and comment on items
-- View watchlist statistics
-- Grid and table view modes
+- Rate (0-10) and add comments to items
+- Automatic `completedAt` timestamp tracking when status changes to Completed
+- View watchlist statistics (placeholder)
+- Grid view mode (table view coming soon)
+- Keyboard shortcut: `Cmd+K` / `Ctrl+K` to toggle search
+- Redis-cached TMDB API responses (24h TTL)
+- Server-side rendering via TanStack Start + Nitro
 
 ## Prerequisites
 
@@ -64,6 +69,8 @@ REDIS_URL=redis://localhost:6379
 cd backend && docker-compose up -d
 ```
 
+This starts PostgreSQL, Redis, Drizzle Studio (DB GUI), and RedisInsight.
+
 4. **Run database migrations**
 
 ```bash
@@ -78,7 +85,7 @@ cd backend && npx prisma migrate dev
 cd backend && pnpm dev
 ```
 
-Server runs at `http://localhost:8080`
+Server runs at `http://localhost:8080` (or your configured PORT)
 
 **Frontend:**
 
@@ -90,43 +97,75 @@ App runs at `http://localhost:3000`
 
 ## API Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/auth/signup` | User registration |
-| `POST /api/auth/signin` | User login |
-| `GET /api/media/search?q=` | Search TMDB |
-| `GET /api/media/:id` | Get media details |
-| `GET /api/watchlist` | Get user's watchlist |
-| `POST /api/watchlist` | Add item to watchlist |
-| `PATCH /api/watchlist/:id` | Update watchlist item |
-| `DELETE /api/watchlist/:id` | Remove from watchlist |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `ALL` | `/api/auth/{*any}` | No | Better-auth catch-all (signup, signin, session, signout) |
+| `GET` | `/api/media/search?type=&q=` | No | Search TMDB (movies, TV shows) |
+| `GET` | `/api/watchlist?page=&limit=&status=&type=&sort=&q=` | Yes | Get paginated, filtered, sorted watchlist |
+| `POST` | `/api/watchlist` | Yes | Add item to watchlist |
+| `PATCH` | `/api/watchlist/:id` | Yes | Update status, rating, or comments |
+| `DELETE` | `/api/watchlist/:id` | Yes | Remove item from watchlist |
+
+## Data Models
+
+```
+User
+├── id, name, email, emailVerified, image
+└── Relations: Session, Account, Wishlist
+
+MediaItem
+├── itemId, title, type (MOVIE/TV/ANIME), apiSource (TMDB/TVDB/ANILIST), apiId, metadata (JSON)
+└── Unique: [apiSource, apiId]
+
+Wishlist
+├── wishlistId, userId, mediaItemId, status, rating (Decimal), completedAt, comments
+└── Unique: [userId, mediaItemId]
+```
 
 ## Project Structure
 
 ```
 catalogus/
-├── frontend/               # React frontend
+├── frontend/               # React frontend with SSR
 │   ├── src/
-│   │   ├── components/    # UI components
-│   │   ├── routes/       # TanStack Router routes
-│   │   ├── stores/       # Zustand stores
-│   │   └── integrations/ # TanStack Query setup
+│   │   ├── api/           # Axios client + API functions
+│   │   ├── components/    # UI components (Radix, animate-ui, watchlist)
+│   │   ├── routes/        # TanStack Router file-based routes
+│   │   ├── stores/        # Zustand stores (filters, watchlist)
+│   │   ├── integrations/  # TanStack Query setup
+│   │   └── lib/           # Auth client, utilities
 │   └── package.json
 │
 ├── backend/               # Express API
 │   ├── src/
 │   │   ├── controllers/  # Route handlers
 │   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic
-│   │   ├── schemas/     # Zod validation
-│   │   ├── middleware/  # Express middleware
-│   │   ├── lib/         # Utilities
-│   │   └── db/          # Prisma client
-│   ├── prisma/          # Database schema
+│   │   ├── services/     # TMDB service, Redis cache service
+│   │   ├── schemas/      # Zod validation
+│   │   ├── middleware/   # Auth middleware
+│   │   ├── db/           # Prisma client with $extends
+│   │   └── lib/          # Auth configuration
+│   ├── prisma/           # Database schema + migrations
+│   ├── bruno/            # API testing collection
 │   └── package.json
 │
 └── README.md
 ```
+
+## Infrastructure (Docker Compose)
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| PostgreSQL | 5432 | Primary database |
+| Redis | 6379 | API response caching |
+| Drizzle Studio | 4983 | Database GUI |
+| RedisInsight | 5540 | Redis monitoring GUI |
+
+## Coming Soon
+
+- **Table view mode** — components exist, wiring in progress
+- **Anime/AniList integration** — enums and scaffolding in place, search/details pending
+- **Stats page** — route exists, content under construction
 
 ## License
 
