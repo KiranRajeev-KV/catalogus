@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Database, Sparkles, Tv } from "lucide-react";
-import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { MyNavbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 
@@ -18,14 +18,34 @@ const POSTERS = [
 
 function App() {
 	const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+	const shouldReduceMotion = useReducedMotion();
+	const rafRef = useRef<number | null>(null);
+	const pendingPositionRef = useRef({ x: 0, y: 0 });
 
 	useEffect(() => {
+		if (shouldReduceMotion) {
+			return;
+		}
+
 		const handleMouseMove = (e: MouseEvent) => {
-			setMousePosition({ x: e.clientX, y: e.clientY });
+			pendingPositionRef.current = { x: e.clientX, y: e.clientY };
+			if (rafRef.current !== null) {
+				return;
+			}
+			rafRef.current = window.requestAnimationFrame(() => {
+				setMousePosition(pendingPositionRef.current);
+				rafRef.current = null;
+			});
 		};
 		window.addEventListener("mousemove", handleMouseMove);
-		return () => window.removeEventListener("mousemove", handleMouseMove);
-	}, []);
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			if (rafRef.current !== null) {
+				window.cancelAnimationFrame(rafRef.current);
+				rafRef.current = null;
+			}
+		};
+	}, [shouldReduceMotion]);
 
 	return (
 		<div className="relative min-h-screen w-full bg-linear-to-b from-background via-background to-background/95 text-foreground overflow-hidden">
@@ -38,25 +58,39 @@ function App() {
 				<motion.div
 					className="absolute w-96 h-96 bg-primary/10 rounded-full blur-3xl"
 					animate={{
-						x: mousePosition.x - 192,
-						y: mousePosition.y - 192,
+						x: shouldReduceMotion ? 0 : mousePosition.x - 192,
+						y: shouldReduceMotion ? 0 : mousePosition.y - 192,
 					}}
 					transition={{ type: "spring", damping: 30, mass: 0.2 }}
 				/>
 				<motion.div
 					className="absolute top-1/4 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl"
 					animate={{
-						x: -mousePosition.x * 0.5,
-						y: mousePosition.y * 0.3,
+						x: shouldReduceMotion ? 0 : -mousePosition.x * 0.5,
+						y: shouldReduceMotion ? 0 : mousePosition.y * 0.3,
 					}}
 					transition={{ type: "spring", damping: 40, mass: 0.3 }}
 				/>
 
 				{/* Tilted marquee background */}
 				<div className="absolute inset-0 opacity-30 select-none flex flex-col justify-center rotate-[-5deg] scale-110">
-					<MarqueeRow direction="left" speed={50} />
-					<MarqueeRow direction="right" speed={40} className="mt-8" />
-					<MarqueeRow direction="left" speed={45} className="mt-8" />
+					<MarqueeRow
+						direction="left"
+						speed={50}
+						reduceMotion={shouldReduceMotion}
+					/>
+					<MarqueeRow
+						direction="right"
+						speed={40}
+						className="mt-8"
+						reduceMotion={shouldReduceMotion}
+					/>
+					<MarqueeRow
+						direction="left"
+						speed={45}
+						className="mt-8"
+						reduceMotion={shouldReduceMotion}
+					/>
 				</div>
 
 				{/* Gradient overlays */}
@@ -218,34 +252,38 @@ function MarqueeRow({
 	direction = "left",
 	speed = 20,
 	className = "",
+	reduceMotion = false,
 }: {
 	direction?: "left" | "right";
 	speed?: number;
 	className?: string;
+	reduceMotion?: boolean;
 }) {
 	return (
 		<div className={`flex overflow-hidden gap-6 ${className}`}>
 			<motion.div
 				className="flex gap-6 min-w-max"
 				initial={{ x: direction === "left" ? 0 : "-50%" }}
-				animate={{ x: direction === "left" ? "-50%" : 0 }}
+				animate={{ x: reduceMotion ? 0 : direction === "left" ? "-50%" : 0 }}
 				transition={{
-					duration: speed,
-					repeat: Number.POSITIVE_INFINITY,
+					duration: reduceMotion ? 0 : speed,
+					repeat: reduceMotion ? 0 : Number.POSITIVE_INFINITY,
 					ease: "linear",
 					repeatType: "loop",
 				}}
 			>
-				{[...POSTERS, ...POSTERS, ...POSTERS].map((src, i) => (
+				{[...POSTERS, ...POSTERS].map((src, i) => (
 					<div
 						// biome-ignore lint/suspicious/noArrayIndexKey: key is acceptable here
 						key={i}
 						className="w-40 h-60 md:w-56 md:h-80 rounded-2xl overflow-hidden shadow-xl opacity-30 grayscale hover:grayscale-0 hover:opacity-60 hover:scale-105 transition-all duration-500 ease-out cursor-default shrink-0"
 					>
 						<img
-							src={src || "/placeholder.svg"}
+							src={src}
 							alt="Poster"
 							className="w-full h-full object-cover"
+							loading="lazy"
+							decoding="async"
 						/>
 					</div>
 				))}
