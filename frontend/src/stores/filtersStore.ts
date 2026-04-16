@@ -1,9 +1,11 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { MediaType } from "@/types/mediaItem";
 import type { WatchlistStatus } from "@/types/watchlistItem";
 
 export type TypeFilter = MediaType | undefined;
 export type StatusFilter = WatchlistStatus | undefined;
+export type ViewMode = "grid" | "table";
 export type SortBy =
 	| "latest"
 	| "oldest"
@@ -30,38 +32,54 @@ interface FiltersState {
 
 	sort: SortBy;
 	setSortBy: (sort: SortBy) => void;
+
+	viewMode: ViewMode;
+	setViewMode: (viewMode: ViewMode) => void;
 }
 
-const useFilters = create<FiltersState>((set) => ({
-	page: 1,
-	setPage: (page) => {
-		set({ page });
-	},
+const useFilters = create<FiltersState>()(
+	persist(
+		(set) => ({
+			page: 1,
+			setPage: (page) => {
+				set({ page });
+			},
 
-	limit: 10,
-	setLimit: (limit) => {
-		set({ page: 1, limit });
-	},
+			limit: 10,
+			setLimit: (limit) => {
+				set({ page: 1, limit });
+			},
 
-	q: undefined,
-	setSearchQuery: (query) => {
-		set({ q: query });
-	},
+			q: undefined,
+			setSearchQuery: (query) => {
+				set({ q: query });
+			},
 
-	type: undefined,
-	setTypeFilter: (type) => {
-		set({ page: 1, type: type });
-	},
+			type: undefined,
+			setTypeFilter: (type) => {
+				set({ page: 1, type: type });
+			},
 
-	status: undefined,
-	setStatusFilter: (status) => {
-		set({ page: 1, status: status });
-	},
+			status: undefined,
+			setStatusFilter: (status) => {
+				set({ page: 1, status: status });
+			},
 
-	sort: "latest",
-	setSortBy: (sort) => {
-		set({ page: 1, sort: sort });
-	},
-}));
+			sort: "latest",
+			setSortBy: (sort) => {
+				set({ page: 1, sort: sort });
+			},
+
+			viewMode: "grid",
+			setViewMode: (viewMode) => {
+				set({ viewMode });
+			},
+		}),
+		{
+			name: "watchlist-view-mode",
+			partialize: (state) => ({ viewMode: state.viewMode }),
+		},
+	),
+);
 
 export default useFilters;

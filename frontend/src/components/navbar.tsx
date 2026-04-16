@@ -3,7 +3,6 @@ import { GalleryVerticalEnd, Loader2, LogOut } from "lucide-react";
 import { motion } from "motion/react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
 import { Button } from "./ui/button";
 
 export function MyNavbar() {

@@ -30,16 +30,16 @@ export function DataTable<TData, TValue>({
 	});
 
 	return (
-		<div className="overflow-hidden border max-w-full">
-			<Table className="">
-				<TableHeader className="h-12">
+		<div className="max-w-full overflow-hidden rounded-xl border border-border/70 bg-card">
+			<Table>
+				<TableHeader className="h-12 sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/85">
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id}>
 							{headerGroup.headers.map((header) => {
 								return (
 									<TableHead
 										key={header.id}
-										className="bg-primary text-primary-foreground"
+										className="px-3 text-xs text-muted-foreground/85 font-semibold"
 									>
 										{header.isPlaceholder
 											? null
@@ -57,14 +57,17 @@ export function DataTable<TData, TValue>({
 					{table.getRowModel().rows?.length ? (
 						table.getRowModel().rows.map((row) => (
 							<TableRow
-								className="bg-muted"
+								className="bg-card hover:bg-muted/35"
 								key={row.id}
 								data-state={row.getIsSelected() && "selected"}
 							>
 								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id} className="align-top">
+									<TableCell
+										key={cell.id}
+										className="align-top px-3 py-3 whitespace-normal"
+									>
 										{cell.column.id === "title" ? (
-											<div className="font-semibold">
+											<div className="font-medium">
 												{flexRender(
 													cell.column.columnDef.cell,
 													cell.getContext(),
@@ -79,7 +82,7 @@ export function DataTable<TData, TValue>({
 						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
+							<TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
 								No results.
 							</TableCell>
 						</TableRow>

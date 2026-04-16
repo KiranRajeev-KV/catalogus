@@ -7,6 +7,7 @@ import { fetchWatchlist } from "@/api/axios";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
 import { WatchlistPagination } from "@/components/watchlist-components/watchlistPagination";
+import { WatchlistTable } from "@/components/watchlist-components/table";
 import useFilters from "@/stores/filtersStore";
 
 export const Route = createFileRoute("/_auth/watchlist")({
@@ -75,7 +76,11 @@ function Watchlist() {
 					</div>
 				) : (
 					<>
-						<WatchlistGrid items={data.data} />
+						{filterStore.viewMode === "table" ? (
+							<WatchlistTable items={data.data} />
+						) : (
+							<WatchlistGrid items={data.data} />
+						)}
 
 						<WatchlistPagination
 							currentPage={data.pagination.page}

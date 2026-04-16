@@ -4,7 +4,7 @@
 // Status Filter - PLAN_TO_WATCH,WATCHING,COMPLETED,ON_HOLD,DROPPED -> Dropdown
 // Sort By - DATE_ADDED,DATE_RELEASED,TITLE,RATING,PRIORITY -> Dropdown
 
-import { Plus, Search } from "lucide-react";
+import { LayoutGrid, List, Plus, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -193,6 +193,35 @@ export function WatchlistFilters() {
 						</SelectGroup>
 					</SelectContent>
 				</Select>
+
+				<ToggleGroup
+					type="single"
+					value={filters.viewMode}
+					onValueChange={(value) => {
+						if (value === "grid" || value === "table") {
+							filters.setViewMode(value);
+						}
+					}}
+					className="border gap-0 max-h-9 shadow-xs border-input"
+					aria-label="Select watchlist view mode"
+				>
+					<ToggleGroupItem
+						value="grid"
+						className="px-3 text-base"
+						aria-label="Grid view"
+					>
+						<LayoutGrid className="h-4 w-4 mr-1" />
+						Grid
+					</ToggleGroupItem>
+					<ToggleGroupItem
+						value="table"
+						className="px-3 text-base border-l"
+						aria-label="Table view"
+					>
+						<List className="h-4 w-4 mr-1" />
+						Table
+					</ToggleGroupItem>
+				</ToggleGroup>
 			</div>
 		</div>
 	);

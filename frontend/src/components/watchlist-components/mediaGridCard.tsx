@@ -2,6 +2,7 @@
 import {
 	Calendar,
 	CircleCheckBig,
+	Clapperboard,
 	Dot,
 	Film,
 	Pencil,
@@ -28,6 +29,16 @@ interface MediaGridCardProps {
 }
 
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+const getPosterUrl = (posterPath: string | null | undefined) => {
+	if (!posterPath) {
+		return null;
+	}
+	if (posterPath.startsWith("http://") || posterPath.startsWith("https://")) {
+		return posterPath;
+	}
+	return `${TMDB_IMAGE_BASE_URL}${posterPath}`;
+};
 
 export function MediaGridCard({
 	item,
@@ -66,9 +77,9 @@ export function MediaGridCard({
 		<Card className="group relative border-none shadow-sm gap-4 hover:shadow-xl transition-all duration-300 overflow-hidden pt-0 pb-4">
 			{/*POSTER IMAGE */}
 			<div className="relative aspect-2/3 w-full overflow-hidden rounded-t-lg">
-				{metadata.posterPath ? (
+				{getPosterUrl(metadata.posterPath) ? (
 					<img
-						src={`${TMDB_IMAGE_BASE_URL}${metadata.posterPath}`}
+						src={getPosterUrl(metadata.posterPath) || undefined}
 						alt={title}
 						className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 						loading="lazy"
@@ -191,10 +202,12 @@ export function MediaGridCard({
 						<span className="flex items-center gap-1 text-base">
 							{type === "MOVIE" ? (
 								<Film className="h-4 w-4" />
+							) : type === "ANIME" ? (
+								<Clapperboard className="h-4 w-4" />
 							) : (
 								<Tv className="h-4 w-4" />
 							)}
-							{type === "TV" ? "TV" : "Movie"}
+							{type === "TV" ? "TV" : type === "ANIME" ? "Anime" : "Movie"}
 						</span>
 					</div>
 
