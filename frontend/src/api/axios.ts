@@ -1,10 +1,11 @@
 // frontend/src/api/axios.ts
 import axios from "axios";
 import type { SortBy, StatusFilter } from "@/stores/filtersStore";
-import type { MediaType, MediaSearchResult } from "@/types/mediaItem";
+import type { MediaSearchResult, MediaType } from "@/types/mediaItem";
 import type { WatchlistStatus } from "@/types/watchlistItem";
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL =
+	import.meta.env.VITE_API_BASE_URL?.trim() || "http://localhost:8080/api";
 
 const api = axios.create({
 	baseURL: BASE_URL,

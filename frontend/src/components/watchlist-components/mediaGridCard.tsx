@@ -91,7 +91,7 @@ export function MediaGridCard({
 				)}
 
 				{/* Gradient Overlay */}
-				<div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+				<div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity duration-300" />
 
 				{/* Status Badge */}
 				<div className="absolute top-2 left-2.5 z-10">
@@ -103,7 +103,7 @@ export function MediaGridCard({
 				</div>
 
 				{/* Action Menu */}
-				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 ease-in-out transition-all duration-300 z-20 w-[80%]">
+				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-[80%] translate-y-0 opacity-100 md:translate-y-4 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 md:group-focus-within:translate-y-0 md:group-focus-within:opacity-100 ease-in-out transition-all duration-300">
 					<div className="flex items-center justify-center gap-2 bg-black/30 backdrop-blur-md p-1.5 rounded-full shadow-xl">
 						{/* Mark as Complete */}
 						<TooltipProvider>
@@ -112,7 +112,7 @@ export function MediaGridCard({
 									<Button
 										variant="ghost"
 										size="icon"
-										className="h-8 w-8 rounded-full hover:bg-green-500/20 hover:text-green-400 text-white hover:scale-110 transition-colors"
+										className="h-8 w-8 rounded-full hover:bg-green-500/20 hover:text-green-400 text-white hover:scale-110 transition-colors focus-visible:ring-2 focus-visible:ring-white/80"
 										onClick={(e) => {
 											e.stopPropagation();
 											onComplete?.(item.wishlistId);
@@ -134,7 +134,7 @@ export function MediaGridCard({
 									<Button
 										variant="ghost"
 										size="icon"
-										className="h-8 w-8 rounded-full hover:bg-blue-500/20 text-white hover:text-blue-400 transition-colors hover:scale-110 ease-in-out"
+										className="h-8 w-8 rounded-full hover:bg-blue-500/20 text-white hover:text-blue-400 transition-colors hover:scale-110 ease-in-out focus-visible:ring-2 focus-visible:ring-white/80"
 										onClick={(e) => {
 											e.stopPropagation();
 											onEdit?.(item.wishlistId);
@@ -155,7 +155,7 @@ export function MediaGridCard({
 									<Button
 										variant="ghost"
 										size="icon"
-										className="h-8 w-8 rounded-full hover:bg-red-500/20 hover:text-red-400 text-white transition-colors hover:scale-110 ease-in-out"
+										className="h-8 w-8 rounded-full hover:bg-red-500/20 hover:text-red-400 text-white transition-colors hover:scale-110 ease-in-out focus-visible:ring-2 focus-visible:ring-white/80"
 										onClick={(e) => {
 											e.stopPropagation();
 											onDelete?.(item.wishlistId);

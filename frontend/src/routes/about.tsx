@@ -11,7 +11,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
 	return (
-		<div className="relative min-h-screen w-full bg-background text-foreground overflow-hidden">
+		<div className="relative min-h-screen w-full overflow-hidden bg-linear-to-b from-background via-background to-muted/20 text-foreground">
 			{/* Navbar */}
 			<div className="fixed top-0 left-0 w-full z-50">
 				<MyNavbar />
@@ -23,7 +23,7 @@ function AboutPage() {
 				<div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/5 blur-[120px] rounded-full" />
 			</div>
 
-			<main className="relative z-10 container mx-auto px-4 py-32 max-w-4xl">
+			<main className="relative z-10 mx-auto w-[95%] max-w-5xl px-4 py-28 sm:py-32">
 				{/* TITLE */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}

@@ -7,9 +7,9 @@ import { fetchWatchlist } from "@/api/axios";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WatchlistGrid } from "@/components/watchlist-components/grid";
+import { WatchlistTable } from "@/components/watchlist-components/table";
 import { WatchlistFilters } from "@/components/watchlist-components/watchlistFilters";
 import { WatchlistPagination } from "@/components/watchlist-components/watchlistPagination";
-import { WatchlistTable } from "@/components/watchlist-components/table";
 import useFilters from "@/stores/filtersStore";
 
 export const Route = createFileRoute("/_auth/watchlist")({
@@ -55,7 +55,9 @@ function Watchlist() {
 			{Array.from({ length: isTable ? 8 : 6 }).map((_, idx) => (
 				<Skeleton
 					key={`watchlist-skeleton-${idx + 1}`}
-					className={isTable ? "h-20 w-full rounded-xl" : "h-64 w-full rounded-xl"}
+					className={
+						isTable ? "h-20 w-full rounded-xl" : "h-64 w-full rounded-xl"
+					}
 				/>
 			))}
 		</div>
@@ -73,9 +75,7 @@ function Watchlist() {
 					<Button
 						className="mt-4"
 						size="sm"
-						onClick={() =>
-							window.location.reload()
-						}
+						onClick={() => window.location.reload()}
 					>
 						Retry
 					</Button>
@@ -84,9 +84,11 @@ function Watchlist() {
 		);
 
 	return (
-		<div>
-			<div className="container mx-auto my-8 max-w-[75%]">
-				<h1 className="text-5xl font-bold mb-4">My Watchlist</h1>
+		<div className="bg-linear-to-b from-background via-background to-muted/20">
+			<div className="mx-auto my-6 max-w-[75%] rounded-2xl p-4 sm:my-8 sm:p-6">
+				<h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+					My Watchlist
+				</h1>
 				<WatchlistFilters />
 
 				{isFetching && (
