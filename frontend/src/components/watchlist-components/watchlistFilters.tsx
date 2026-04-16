@@ -30,6 +30,8 @@ import { Button } from "../ui/button";
 
 export function WatchlistFilters() {
 	const [isSearchOpen, setSearchOpen] = useState(false);
+	const filters = useFilters();
+	const [searchText, setSearchText] = useState(filters.q ?? "");
 
 	// a manual way to focus the input when it appears.
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -56,8 +58,14 @@ export function WatchlistFilters() {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, []);
 
-	// filters store
-	const filters = useFilters();
+	useEffect(() => {
+		const handle = window.setTimeout(() => {
+			const next = searchText.trim();
+			filters.setSearchQuery(next ? next : undefined);
+		}, 300);
+
+		return () => window.clearTimeout(handle);
+	}, [searchText, filters.setSearchQuery]);
 
 	return (
 		<div className="flex flex-row justify-between mb-3 py-2">
@@ -72,7 +80,9 @@ export function WatchlistFilters() {
 				{/* Search Bar */}
 				<div className="relative flex items-center">
 					<Button
-						onClick={() => {setSearchOpen((o) => !o); filters.setSearchQuery(undefined)}}
+						onClick={() => {
+							setSearchOpen((o) => !o);
+						}}
 						variant={"outline"}
 						className="p-2 focus:outline-none border-input rounded-lg shadow-xs text-base hover:bg-accent hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150"
 					>
@@ -91,10 +101,8 @@ export function WatchlistFilters() {
 								className="bg-input ml-2 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:outline-none text-base text-foreground"
 								autoFocus={true}
 								placeholder="Search..."
-								value={filters.q}
-								onChange={(e) =>
-									filters.setSearchQuery(e.target.value || undefined)
-								}
+								value={searchText}
+								onChange={(e) => setSearchText(e.target.value)}
 							/>
 						)}
 					</AnimatePresence>
@@ -105,27 +113,33 @@ export function WatchlistFilters() {
 				{/* Type Filter */}
 				<ToggleGroup
 					type="single"
+					value={filters.type ?? ""}
 					className="border gap-0 max-h-9 shadow-xs border-input"
 				>
-					{["Movie", "TV", "Anime"].map((type) => (
+					{[
+						{ label: "Movie", value: "MOVIE" },
+						{ label: "TV", value: "TV" },
+						{ label: "Anime", value: "ANIME" },
+					].map((item) => (
 						<ToggleGroupItem
-							key={type}
-							value={type}
-							className={`w-18 px-3 text-base ${type !== "ALL" ? "border-l" : ""}`}
+							key={item.value}
+							value={item.value}
+							className="w-18 px-3 text-base border-l first:border-l-0"
 							onClick={() => {
 								filters.setTypeFilter(
-									filters.type === type.toUpperCase()
+									filters.type === item.value
 										? undefined
-										: (type.toUpperCase() as MediaType),
+										: (item.value as MediaType),
 								);
 							}}
 						>
-							{type}
+							{item.label}
 						</ToggleGroupItem>
 					))}
 				</ToggleGroup>
 				{/* Status Dropdown */}
 				<Select
+					value={filters.status ?? "ALL"}
 					onValueChange={(status) => {
 						filters.setStatusFilter(
 							status === "ALL" ? undefined : (status as StatusFilter),
@@ -159,6 +173,7 @@ export function WatchlistFilters() {
 
 				{/* Sort By Dropdown */}
 				<Select
+					value={filters.sort}
 					onValueChange={(sort) => {
 						filters.setSortBy(sort as SortBy);
 					}}
