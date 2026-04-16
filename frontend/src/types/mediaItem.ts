@@ -1,13 +1,13 @@
 export type MediaType = "MOVIE" | "TV" | "ANIME";
 export type ApiSource = "TMDB" | "TVDB" | "ANILIST";
 
-export interface TMDBSearchResult {
+export interface MediaSearchResult {
 	title: string;
 	apiSource: ApiSource;
 	apiId: string;
 	type: MediaType;
 	poster_path: string | null;
-	release_date: string;
+	release_date: string | null;
 }
 
 export interface MediaItem {

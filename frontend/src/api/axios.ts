@@ -1,7 +1,7 @@
 // frontend/src/api/axios.ts
 import axios from "axios";
 import type { SortBy, StatusFilter } from "@/stores/filtersStore";
-import type { MediaType } from "@/types/mediaItem";
+import type { MediaType, MediaSearchResult } from "@/types/mediaItem";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -13,6 +13,20 @@ const api = axios.create({
 });
 
 export default api;
+
+export interface MediaSearchResponse {
+	results: MediaSearchResult[];
+	meta?: {
+		fallbackUsed?: boolean;
+		fallbackSource?: "LOCAL_DB";
+		warning?: string;
+		integration?: {
+			provider?: "TMDB" | "ANILIST";
+			retryable?: boolean;
+			retryAttempts?: number | null;
+		};
+	};
+}
 
 export async function fetchWatchlist(
 	page: number,
@@ -35,18 +49,19 @@ export async function fetchWatchlist(
 	return response.data;
 }
 
-export async function searchMedia(type: MediaType, query: string) {
-	try {
-		const response = await api.get("/media/search", {
-			params: {
-				type: type,
-				q: query,
-			},
-		});
-		return response.data;
-	} catch (error) {
-		console.error("Error searching media:", error);
-	}
+export async function searchMedia(
+	type: MediaType,
+	query: string,
+	includeAdult = false,
+): Promise<MediaSearchResponse> {
+	const response = await api.get("/media/search", {
+		params: {
+			type: type,
+			q: query,
+			includeAdult: includeAdult,
+		},
+	});
+	return response.data;
 }
 
 export const addItemToWatchlist = async (data: {

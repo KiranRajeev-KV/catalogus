@@ -1,5 +1,6 @@
 // frontend/src/components/watchlist-components/searchDialog.tsx
 
+import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Search, X, Film, Tv, Clapperboard } from "lucide-react";
 import { useState } from "react";
@@ -23,10 +24,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { MediaType, TMDBSearchResult } from "@/types/mediaItem";
+import type { MediaSearchResult, MediaType } from "@/types/mediaItem";
 
-interface SearchResponse {
-    results: TMDBSearchResult[];
+interface SearchErrorState {
+    title: string;
+    message: string;
+    canRetry: boolean;
+    provider?: "TMDB" | "ANILIST";
+    retryAttempts?: number | null;
 }
 
 export function WatchlistSearchModal({
@@ -37,13 +42,24 @@ export function WatchlistSearchModal({
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [type, setType] = useState<MediaType>("MOVIE");
-    const [results, setResults] = useState<TMDBSearchResult[]>([]);
+    const [includeAdult, setIncludeAdult] = useState(false);
+    const [results, setResults] = useState<MediaSearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
+    const [searchError, setSearchError] = useState<SearchErrorState | null>(null);
+    const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
 
     const queryClient = useQueryClient();
     const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w300";
+
+    const getPosterUrl = (path: string | null) => {
+        if (!path) return null;
+        if (path.startsWith("http://") || path.startsWith("https://")) {
+            return path;
+        }
+        return `${IMAGE_BASE_URL}${path}`;
+    };
 
     const debouncedHandleSearch = useDebouncedCallback(
     () => {
@@ -52,17 +68,60 @@ export function WatchlistSearchModal({
     { wait: 500 }
     );
 
-    const handleSearch = async () => {
+    const handleSearch = async (
+        searchType: MediaType = type,
+        adultEnabled = includeAdult,
+    ) => {
         if (!query.trim()) return;
         setIsLoading(true);
         setHasSearched(true);
         setResults([]);
+        setSearchError(null);
+        setFallbackMessage(null);
         try {
-            const data: SearchResponse = await searchMedia(type, query);
+            const data = await searchMedia(
+                searchType,
+                query,
+                searchType === "ANIME" ? adultEnabled : false,
+            );
             setResults(data.results || []);
+            if (data.meta?.fallbackUsed) {
+                setFallbackMessage(
+                    data.meta.warning ||
+                        "Live provider is unavailable. Showing cached watchlist matches.",
+                );
+                toast.warning("Showing cached local matches");
+            }
         } catch (error) {
             console.error("Search failed", error);
-            toast.error("Failed to search media");
+            if (axios.isAxiosError(error)) {
+                const details = error.response?.data?.details as
+                    | {
+                          provider?: "TMDB" | "ANILIST";
+                          retryable?: boolean;
+                          retryAttempts?: number | null;
+                          message?: string;
+                      }
+                    | undefined;
+
+                setSearchError({
+                    title: details?.provider
+                        ? `${details.provider} search is unavailable`
+                        : "Search is unavailable",
+                    message:
+                        details?.message ||
+                        "We could not fetch live results right now. Please try again.",
+                    canRetry: details?.retryable ?? true,
+                    provider: details?.provider,
+                    retryAttempts: details?.retryAttempts ?? null,
+                });
+            } else {
+                setSearchError({
+                    title: "Search failed",
+                    message: "Unexpected error while searching. Please try again.",
+                    canRetry: true,
+                });
+            }
         } finally {
             setIsLoading(false);
         }
@@ -73,7 +132,7 @@ export function WatchlistSearchModal({
     };
 
     const mutation = useMutation({
-        mutationFn: (item: TMDBSearchResult) => {
+        mutationFn: (item: MediaSearchResult) => {
             return addItemToWatchlist({
                 apiId: item.apiId,
                 type: type,
@@ -98,7 +157,7 @@ export function WatchlistSearchModal({
         onSettled: () => setAddingId(null),
     });
 
-    const addToWatchlist = (item: TMDBSearchResult) => {
+    const addToWatchlist = (item: MediaSearchResult) => {
         setAddingId(item.apiId);
         mutation.mutate(item);
     };
@@ -113,6 +172,8 @@ export function WatchlistSearchModal({
                         setQuery("");
                         setResults([]);
                         setHasSearched(false);
+                        setSearchError(null);
+                        setFallbackMessage(null);
                     }, 200);
                 }
             }}
@@ -131,7 +192,9 @@ export function WatchlistSearchModal({
                         {/* Type Selector */}
                         <Select value={type} onValueChange={(val: MediaType) => {
                             setType(val);
-                            debouncedHandleSearch();
+                            if (query.trim()) {
+                                void handleSearch(val, includeAdult);
+                            }
                         }}>
                             <SelectTrigger size="default" className="w-[140px] !h-9 bg-muted/50 border-transparent focus:ring-primary/20 hover:bg-muted/80 transition-colors rounded-xl">
                                 <div className="flex items-center gap-2 ">
@@ -179,7 +242,7 @@ export function WatchlistSearchModal({
 
                         {/* Search Button */}
                         <Button 
-                            onClick={handleSearch} 
+                            onClick={() => void handleSearch()} 
                             disabled={isLoading} 
                             className="h-9 px-6 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
                         >
@@ -190,10 +253,43 @@ export function WatchlistSearchModal({
                             )}
                         </Button>
                     </div>
+
+                    {type === "ANIME" && (
+                        <div className="flex items-center justify-between rounded-xl border border-border/50 bg-muted/30 px-3 py-2">
+                            <div className="text-sm">
+                                <p className="font-medium">Include adult results</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Off by default for safer search results.
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={includeAdult ? "default" : "outline"}
+                                onClick={() => {
+                                    setIncludeAdult((prev) => {
+                                        const next = !prev;
+                                        setSearchError(null);
+                                        if (query.trim()) {
+                                            void handleSearch("ANIME", next);
+                                        }
+                                        return next;
+                                    });
+                                }}
+                            >
+                                {includeAdult ? "On" : "Off"}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* --- RESULTS AREA --- */}
                 <ScrollArea className="flex-1 h-[500px] p-6 bg-muted/10 overflow-y-auto">
+                    {fallbackMessage && (
+                        <div className="mb-4 rounded-xl border border-amber-300/40 bg-amber-50/60 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-200">
+                            {fallbackMessage}
+                        </div>
+                    )}
                     {results.length > 0 ? (
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-4 gap-y-8 pb-4">
                             {results.map((item) => (
@@ -203,9 +299,9 @@ export function WatchlistSearchModal({
                                 >
                                     {/* Poster Container */}
                                     <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-muted shadow-sm ring-1 ring-border/50 group-hover:shadow-xl group-hover:ring-primary/30 transition-all duration-300">
-                                        {item.poster_path ? (
+                                        {getPosterUrl(item.poster_path) ? (
                                             <img
-                                                src={`${IMAGE_BASE_URL}${item.poster_path}`}
+                                                src={getPosterUrl(item.poster_path) || undefined}
                                                 alt={item.title}
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 text-center"
                                                 loading="lazy"
@@ -261,6 +357,39 @@ export function WatchlistSearchModal({
                                         <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
                                     </div>
                                     <p className="text-sm font-medium">Searching the archives...</p>
+                                </div>
+                            ) : searchError ? (
+                                <div className="w-full max-w-md rounded-xl border border-destructive/40 bg-destructive/10 px-5 py-4 text-left text-destructive">
+                                    <p className="text-sm font-semibold">{searchError.title}</p>
+                                    <p className="mt-1 text-sm text-foreground/80">{searchError.message}</p>
+                                    {searchError.retryAttempts !== null &&
+                                        searchError.retryAttempts !== undefined && (
+                                            <p className="mt-1 text-xs text-foreground/70">
+                                                Retries attempted: {searchError.retryAttempts}
+                                            </p>
+                                        )}
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {searchError.canRetry && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => void handleSearch()}
+                                            >
+                                                Retry search
+                                            </Button>
+                                        )}
+                                        {type === "ANIME" && includeAdult && (
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setIncludeAdult(false);
+                                                    void handleSearch("ANIME", false);
+                                                }}
+                                            >
+                                                Retry with adult off
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             ) : hasSearched ? (
                                 <>
