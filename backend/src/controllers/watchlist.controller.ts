@@ -11,6 +11,7 @@ import {
 	getTMDBMovieDetails,
 	getTMDBTVDetails,
 } from "../services/tmdb.service.js";
+import { getAniListAnimeDetails } from "../services/anilist.service.js";
 import { ApiSource } from "../generated/prisma/enums.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
@@ -168,7 +169,7 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 		} else {
 			// CASE B: It's missing OR it's old.
 			// Fetch from TMDB and update/create the central record.
-			console.log("Fetching fresh metadata from TMDB");
+			console.log("Fetching fresh metadata from external source");
 
 			// 2. fetch media item details from external API
 			// movie & tv calls TMDB, anime calls Anilist
@@ -183,9 +184,8 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 					break;
 				}
 				case "ANIME": {
-					// TODO: implement Anilist service
-					console.log("Error 501: Anime support not implemented yet");
-					return res.status(501).json({ error: "Anime support coming soon" });
+					details = await getAniListAnimeDetails(apiId);
+					break;
 				}
 			}
 
@@ -238,7 +238,9 @@ export const updateWatchlistItem = async (req: Request, res: Response) => {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
-	const watchlistItemId = req.params.id;
+	const watchlistItemId = Array.isArray(req.params.id)
+		? req.params.id[0]
+		: req.params.id;
 	if (!watchlistItemId) {
 		console.log("Error 400: Invalid watchlist item ID");
 		return res.status(400).json({ error: "Invalid watchlist item ID" });
@@ -284,7 +286,9 @@ export const deleteWatchlistItem = async (req: Request, res: Response) => {
 		return res.status(401).json({ error: "Unauthorized" });
 	}
 
-	const watchlistItemId = req.params.id;
+	const watchlistItemId = Array.isArray(req.params.id)
+		? req.params.id[0]
+		: req.params.id;
 	if (!watchlistItemId) {
 		return res.status(400).json({ error: "Invalid watchlist item ID" });
 	}

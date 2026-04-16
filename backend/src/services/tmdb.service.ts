@@ -4,6 +4,11 @@ import "dotenv/config";
 import type { TMDBMovie, TMDBTV } from "../types/tmdb.js";
 import axiosRetry from "axios-retry";
 import { cache } from "./cache.service.js";
+import {
+	IntegrationError,
+	type IntegrationOperation,
+	toIntegrationError,
+} from "../lib/integration-error.js";
 
 const getCacheKey = (type: string, query: string) =>
 	`search:${type}:${query.toLowerCase().trim()}`;
@@ -28,172 +33,208 @@ axiosRetry(api, {
 		axiosRetry.isRetryableError(error),
 });
 
+function ensureTMDBConfigured(operation: IntegrationOperation) {
+	if (TMDB_API_KEY?.trim()) {
+		return;
+	}
+
+	throw new IntegrationError({
+		message: "TMDB API key is missing",
+		publicMessage: "TMDB integration is not configured correctly.",
+		provider: "TMDB",
+		operation,
+		retryable: false,
+		statusCode: 500,
+	});
+}
+
 // search movies from TMDB
 export async function searchTMDBMovie(query: string) {
+	ensureTMDBConfigured("search");
 	const cacheKey = getCacheKey("MOVIE", query);
 
-	const cachedResult = await cache.get(cacheKey);
-	if (cachedResult) {
-		console.log(`[CACHE HIT] Serving "${query}" from Redis`);
-		return cachedResult;
+	try {
+		const cachedResult = await cache.get(cacheKey);
+		if (cachedResult) {
+			console.log(`[CACHE HIT] Serving "${query}" from Redis`);
+			return cachedResult;
+		}
+		console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
+
+		const searchResults = await api.get(`/search/movie`, {
+			params: {
+				query: query,
+			},
+		});
+
+		// sort searchResults by popularity descending
+		searchResults.data.results.sort(
+			(a: TMDBMovie, b: TMDBMovie) => b.popularity - a.popularity,
+		);
+
+		// map searchResults to structured format
+		const structuredResults = searchResults.data.results.map(
+			(item: TMDBMovie) => ({
+				title: item.title,
+				apiSource: ApiSource.TMDB,
+				apiId: item.id.toString(),
+				type: Type.MOVIE,
+				poster_path: item.poster_path,
+				release_date: item.release_date,
+			}),
+		);
+
+		await cache.set(cacheKey, structuredResults, 86400); // cache for 24 hours
+
+		return structuredResults;
+	} catch (error) {
+		throw toIntegrationError("TMDB", "search", error);
 	}
-	console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
-
-	const searchResults = await api.get(`/search/movie`, {
-		params: {
-			query: query,
-		},
-	});
-
-	// sort searchResults by popularity descending
-	searchResults.data.results.sort(
-		(a: TMDBMovie, b: TMDBMovie) => b.popularity - a.popularity,
-	);
-
-	// map searchResults to structured format
-	const structuredResults = searchResults.data.results.map(
-		(item: TMDBMovie) => ({
-			title: item.title,
-			apiSource: ApiSource.TMDB,
-			apiId: item.id.toString(),
-			type: Type.MOVIE,
-			poster_path: item.poster_path,
-			release_date: item.release_date,
-		}),
-	);
-
-	await cache.set(cacheKey, structuredResults, 86400); // cache for 24 hours
-
-	return structuredResults;
 }
 
 // search TV shows from TMDB
 export async function searchTMDBTV(query: string) {
+	ensureTMDBConfigured("search");
 	const cacheKey = getCacheKey("TV", query);
 
-	const cachedResult = await cache.get(cacheKey);
-	if (cachedResult) {
-		console.log(`[CACHE HIT] Serving "${query}" from Redis`);
-		return cachedResult;
+	try {
+		const cachedResult = await cache.get(cacheKey);
+		if (cachedResult) {
+			console.log(`[CACHE HIT] Serving "${query}" from Redis`);
+			return cachedResult;
+		}
+		console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
+
+		const searchResults = await api.get(`/search/tv`, {
+			params: {
+				query: query,
+			},
+		});
+
+		// sort searchResults by popularity descending
+		searchResults.data.results.sort(
+			(a: TMDBTV, b: TMDBTV) => b.popularity - a.popularity,
+		);
+
+		// map searchResults to structured format
+		const structuredResults = searchResults.data.results.map((item: TMDBTV) => ({
+			title: item.name,
+			apiSource: ApiSource.TMDB,
+			apiId: item.id.toString(),
+			type: Type.TV,
+			poster_path: item.poster_path,
+			release_date: item.first_air_date,
+		}));
+
+		await cache.set(cacheKey, structuredResults, 86400);
+
+		return structuredResults;
+	} catch (error) {
+		throw toIntegrationError("TMDB", "search", error);
 	}
-	console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
-
-	const searchResults = await api.get(`/search/tv`, {
-		params: {
-			query: query,
-		},
-	});
-
-	// sort searchResults by popularity descending
-	searchResults.data.results.sort(
-		(a: TMDBTV, b: TMDBTV) => b.popularity - a.popularity,
-	);
-
-	// map searchResults to structured format
-	const structuredResults = searchResults.data.results.map((item: TMDBTV) => ({
-		title: item.name,
-		apiSource: ApiSource.TMDB,
-		apiId: item.id.toString(),
-		type: Type.TV,
-		poster_path: item.poster_path,
-		release_date: item.first_air_date,
-	}));
-
-	await cache.set(cacheKey, structuredResults, 86400);
-
-	return structuredResults;
 }
 
 // get movie details from TMDB by apiId
 export async function getTMDBMovieDetails(apiId: string) {
+	ensureTMDBConfigured("details");
 	const cacheKey = `movie:${apiId}`;
-	const cachedResult = await cache.get(cacheKey);
-	if (cachedResult) {
-		console.log(`[CACHE HIT] Serving movie ID "${apiId}" from Redis`);
-		return cachedResult;
+
+	try {
+		const cachedResult = await cache.get(cacheKey);
+		if (cachedResult) {
+			console.log(`[CACHE HIT] Serving movie ID "${apiId}" from Redis`);
+			return cachedResult;
+		}
+		console.log(`[CACHE MISS] Fetching movie ID "${apiId}" from TMDB`);
+
+		const movieDetails = await api.get(`/movie/${apiId}`);
+
+		const structuredDetails = {
+			title: movieDetails.data.title,
+			type: Type.MOVIE,
+			apiSource: ApiSource.TMDB,
+			apiId: movieDetails.data.id.toString(),
+			metadata: {
+				// essential fields
+				posterPath: movieDetails.data.poster_path,
+				releaseDate: movieDetails.data.release_date,
+				genres: movieDetails.data.genres.map(
+					(g: { id: number; name: string }) => g.name,
+				),
+				overview: movieDetails.data.overview,
+				runtime: movieDetails.data.runtime,
+				rating: movieDetails.data.vote_average,
+
+				// additional fields thats nice to have
+				backdropPath: movieDetails.data.backdrop_path,
+				status: movieDetails.data.status,
+				tagline: movieDetails.data.tagline,
+				originalLanguage: movieDetails.data.original_language,
+				originalTitle: movieDetails.data.original_title,
+				imdbId: movieDetails.data.imdb_id,
+				voteCount: movieDetails.data.vote_count,
+			},
+		};
+
+		await cache.set(cacheKey, structuredDetails, 86400);
+
+		return structuredDetails;
+	} catch (error) {
+		throw toIntegrationError("TMDB", "details", error);
 	}
-	console.log(`[CACHE MISS] Fetching movie ID "${apiId}" from TMDB`);
-
-	const movieDetails = await api.get(`/movie/${apiId}`);
-
-	const structuredDetails = {
-		title: movieDetails.data.title,
-		type: Type.MOVIE,
-		apiSource: ApiSource.TMDB,
-		apiId: movieDetails.data.id.toString(),
-		metadata: {
-			// essential fields
-			posterPath: movieDetails.data.poster_path,
-			releaseDate: movieDetails.data.release_date,
-			genres: movieDetails.data.genres.map(
-				(g: { id: number; name: string }) => g.name,
-			),
-			overview: movieDetails.data.overview,
-			runtime: movieDetails.data.runtime,
-			rating: movieDetails.data.vote_average,
-
-			// additional fields thats nice to have
-			backdropPath: movieDetails.data.backdrop_path,
-			status: movieDetails.data.status,
-			tagline: movieDetails.data.tagline,
-			originalLanguage: movieDetails.data.original_language,
-			originalTitle: movieDetails.data.original_title,
-			imdbId: movieDetails.data.imdb_id,
-			voteCount: movieDetails.data.vote_count,
-		},
-	};
-
-	await cache.set(cacheKey, structuredDetails, 86400);
-
-	return structuredDetails;
 }
 
 // get TV show details from TMDB by apiId
 export async function getTMDBTVDetails(apiId: string) {
+	ensureTMDBConfigured("details");
 	const cacheKey = `tv:${apiId}`;
 
-	const cachedResult = await cache.get(cacheKey);
-	if (cachedResult) {
-		console.log(`[CACHE HIT] Serving TV ID "${apiId}" from Redis`);
-		return cachedResult;
+	try {
+		const cachedResult = await cache.get(cacheKey);
+		if (cachedResult) {
+			console.log(`[CACHE HIT] Serving TV ID "${apiId}" from Redis`);
+			return cachedResult;
+		}
+		console.log(`[CACHE MISS] Fetching TV ID "${apiId}" from TMDB`);
+
+		const tvDetails = await api.get(`/tv/${apiId}`);
+
+		const structuredDetails = {
+			title: tvDetails.data.name,
+			type: Type.TV,
+			apiSource: ApiSource.TMDB,
+			apiId: tvDetails.data.id.toString(),
+			metadata: {
+				// essential fields
+				posterPath: tvDetails.data.poster_path,
+				episodeRunTime: tvDetails.data.episode_run_time,
+				releaseDate: tvDetails.data.first_air_date,
+				genres: tvDetails.data.genres.map(
+					(g: { id: number; name: string }) => g.name,
+				),
+				endDatate: tvDetails.data.last_air_date,
+				totalEpisodes: tvDetails.data.number_of_episodes,
+				totalSeasons: tvDetails.data.number_of_seasons,
+				overview: tvDetails.data.overview,
+				rating: tvDetails.data.vote_average,
+
+				// additional fields thats nice to have
+				backdropPath: tvDetails.data.backdrop_path,
+				languages: tvDetails.data.languages,
+				originalLanguage: tvDetails.data.original_language,
+				originCountry: tvDetails.data.origin_country,
+				originalName: tvDetails.data.original_name,
+				seasons: tvDetails.data.seasons,
+				status: tvDetails.data.status,
+				tagline: tvDetails.data.tagline,
+				voteCount: tvDetails.data.vote_count,
+			},
+		};
+
+		await cache.set(cacheKey, structuredDetails, 86400);
+
+		return structuredDetails;
+	} catch (error) {
+		throw toIntegrationError("TMDB", "details", error);
 	}
-	console.log(`[CACHE MISS] Fetching TV ID "${apiId}" from TMDB`);
-
-	const tvDetails = await api.get(`/tv/${apiId}`);
-
-	const structuredDetails = {
-		title: tvDetails.data.name,
-		type: Type.TV,
-		apiSource: ApiSource.TMDB,
-		apiId: tvDetails.data.id.toString(),
-		metadata: {
-			// essential fields
-			posterPath: tvDetails.data.poster_path,
-			episodeRunTime: tvDetails.data.episode_run_time,
-			releaseDate: tvDetails.data.first_air_date,
-			genres: tvDetails.data.genres.map(
-				(g: { id: number; name: string }) => g.name,
-			),
-			endDatate: tvDetails.data.last_air_date,
-			totalEpisodes: tvDetails.data.number_of_episodes,
-			totalSeasons: tvDetails.data.number_of_seasons,
-			overview: tvDetails.data.overview,
-			rating: tvDetails.data.vote_average,
-
-			// additional fields thats nice to have
-			backdropPath: tvDetails.data.backdrop_path,
-			languages: tvDetails.data.languages,
-			originalLanguage: tvDetails.data.original_language,
-			originCountry: tvDetails.data.origin_country,
-			originalName: tvDetails.data.original_name,
-			seasons: tvDetails.data.seasons,
-			status: tvDetails.data.status,
-			tagline: tvDetails.data.tagline,
-			voteCount: tvDetails.data.vote_count,
-		},
-	};
-
-	await cache.set(cacheKey, structuredDetails, 86400);
-
-	return structuredDetails;
 }
