@@ -13,6 +13,7 @@ import {
 } from "../services/tmdb.service.js";
 import { getAniListAnimeDetails } from "../services/anilist.service.js";
 import { ApiSource } from "../generated/prisma/enums.js";
+import { IntegrationError } from "../lib/integration-error.js";
 
 // /watchlist?page=1&limit=10&status=PLANNING&type=MOVIE&sort=latest&q=title
 export const getWatchlist = async (req: Request, res: Response) => {
@@ -141,9 +142,13 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 
 		if (existingItem) {
 			console.log("Error 409: Item already exists in watchlist");
-			return res
-				.status(409)
-				.json({ error: "Item already exists in watchlist" });
+			return res.status(409).json({
+				error: {
+					code: "WATCHLIST_DUPLICATE",
+					message: "Item already exists in watchlist",
+					retryable: false,
+				},
+			});
 		}
 
 		const apiSource = type === "ANIME" ? ApiSource.ANILIST : ApiSource.TMDB;
@@ -191,9 +196,13 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 
 			if (!details) {
 				console.log("Error 500: Failed to fetch media item details");
-				return res
-					.status(500)
-					.json({ error: "Failed to fetch media item details" });
+				return res.status(500).json({
+					error: {
+						code: "PROVIDER_BAD_RESPONSE",
+						message: "Failed to fetch media item details",
+						retryable: true,
+					},
+				});
 			}
 
 			const updatedMedia = await prisma.mediaItem.upsert({
@@ -224,8 +233,28 @@ export const addToWatchlist = async (req: Request, res: Response) => {
 		console.log("Status 201: Watchlist item added successfully");
 		res.status(201).json(watchlistEntry);
 	} catch (error) {
+		if (error instanceof IntegrationError) {
+			return res.status(error.statusCode).json({
+				error: {
+					code: error.code,
+					message: error.publicMessage,
+					retryable: error.retryable,
+					provider: error.provider,
+					upstreamStatus: error.upstreamStatus ?? null,
+					retryAttempts: error.retryAttempts ?? null,
+					retryAfterMs: error.retryAfterMs ?? null,
+					suggestedBackoffMs: error.suggestedBackoffMs ?? null,
+				},
+			});
+		}
 		console.error("Error 500: Internal server error", error);
-		res.status(500).json({ error: "Internal server error" });
+		res.status(500).json({
+			error: {
+				code: "INTERNAL_ERROR",
+				message: "Internal server error",
+				retryable: true,
+			},
+		});
 	}
 };
 

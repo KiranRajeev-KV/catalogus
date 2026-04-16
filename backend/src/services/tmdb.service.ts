@@ -10,8 +10,43 @@ import {
 	toIntegrationError,
 } from "../lib/integration-error.js";
 
-const getCacheKey = (type: string, query: string) =>
-	`search:${type}:${query.toLowerCase().trim()}`;
+type SearchPayload<T> = {
+	results: T[];
+	hasNextPage: boolean;
+};
+
+function normalizeCachedSearchPayload<T>(
+	cachedResult: unknown,
+): SearchPayload<T> | null {
+	if (!cachedResult) {
+		return null;
+	}
+
+	if (Array.isArray(cachedResult)) {
+		return {
+			results: cachedResult as T[],
+			hasNextPage: cachedResult.length > 0,
+		};
+	}
+
+	if (
+		typeof cachedResult === "object" &&
+		cachedResult !== null &&
+		Array.isArray((cachedResult as { results?: unknown }).results)
+	) {
+		return {
+			results: (cachedResult as { results: T[] }).results,
+			hasNextPage: Boolean(
+				(cachedResult as { hasNextPage?: boolean }).hasNextPage,
+			),
+		};
+	}
+
+	return null;
+}
+
+const getCacheKey = (type: string, query: string, page: number, limit: number) =>
+	`search:${type}:${query.toLowerCase().trim()}:${page}:${limit}`;
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -43,27 +78,49 @@ function ensureTMDBConfigured(operation: IntegrationOperation) {
 		publicMessage: "TMDB integration is not configured correctly.",
 		provider: "TMDB",
 		operation,
+		code: "PROVIDER_BAD_CONFIG",
 		retryable: false,
 		statusCode: 500,
 	});
 }
 
 // search movies from TMDB
-export async function searchTMDBMovie(query: string) {
+export async function searchTMDBMovie(
+	query: string,
+	page = 1,
+	limit = 20,
+) {
 	ensureTMDBConfigured("search");
-	const cacheKey = getCacheKey("MOVIE", query);
+	const cacheKey = getCacheKey("MOVIE", query, page, limit);
 
 	try {
 		const cachedResult = await cache.get(cacheKey);
 		if (cachedResult) {
 			console.log(`[CACHE HIT] Serving "${query}" from Redis`);
-			return cachedResult;
+			const normalized = normalizeCachedSearchPayload<
+				{
+					title: string;
+					apiSource: ApiSource;
+					apiId: string;
+					type: Type;
+					poster_path: string | null;
+					release_date: string | null;
+					community_rating: number | null;
+					vote_count: number | null;
+					popularity: number | null;
+				}
+			>(cachedResult);
+			if (normalized) {
+				return normalized;
+			}
 		}
 		console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
 
 		const searchResults = await api.get(`/search/movie`, {
 			params: {
 				query: query,
+				page,
+				include_adult: false,
 			},
 		});
 
@@ -81,33 +138,63 @@ export async function searchTMDBMovie(query: string) {
 				type: Type.MOVIE,
 				poster_path: item.poster_path,
 				release_date: item.release_date,
+				community_rating: item.vote_average ?? null,
+				vote_count: item.vote_count ?? null,
+				popularity: item.popularity ?? null,
 			}),
 		);
 
-		await cache.set(cacheKey, structuredResults, 86400); // cache for 24 hours
+		const trimmedResults = structuredResults.slice(0, limit);
 
-		return structuredResults;
+		const payload = {
+			results: trimmedResults,
+			hasNextPage: Number(searchResults.data.total_pages || 0) > page,
+		};
+
+		await cache.set(cacheKey, payload, 86400); // cache for 24 hours
+
+		return payload;
 	} catch (error) {
 		throw toIntegrationError("TMDB", "search", error);
 	}
 }
 
 // search TV shows from TMDB
-export async function searchTMDBTV(query: string) {
+export async function searchTMDBTV(
+	query: string,
+	page = 1,
+	limit = 20,
+) {
 	ensureTMDBConfigured("search");
-	const cacheKey = getCacheKey("TV", query);
+	const cacheKey = getCacheKey("TV", query, page, limit);
 
 	try {
 		const cachedResult = await cache.get(cacheKey);
 		if (cachedResult) {
 			console.log(`[CACHE HIT] Serving "${query}" from Redis`);
-			return cachedResult;
+			const normalized = normalizeCachedSearchPayload<
+				{
+					title: string;
+					apiSource: ApiSource;
+					apiId: string;
+					type: Type;
+					poster_path: string | null;
+					release_date: string | null;
+					community_rating: number | null;
+					vote_count: number | null;
+					popularity: number | null;
+				}
+			>(cachedResult);
+			if (normalized) {
+				return normalized;
+			}
 		}
 		console.log(`[CACHE MISS] Fetching "${query}" from TMDB`);
 
 		const searchResults = await api.get(`/search/tv`, {
 			params: {
 				query: query,
+				page,
 			},
 		});
 
@@ -124,11 +211,21 @@ export async function searchTMDBTV(query: string) {
 			type: Type.TV,
 			poster_path: item.poster_path,
 			release_date: item.first_air_date,
+			community_rating: item.vote_average ?? null,
+			vote_count: item.vote_count ?? null,
+			popularity: item.popularity ?? null,
 		}));
 
-		await cache.set(cacheKey, structuredResults, 86400);
+		const trimmedResults = structuredResults.slice(0, limit);
 
-		return structuredResults;
+		const payload = {
+			results: trimmedResults,
+			hasNextPage: Number(searchResults.data.total_pages || 0) > page,
+		};
+
+		await cache.set(cacheKey, payload, 86400);
+
+		return payload;
 	} catch (error) {
 		throw toIntegrationError("TMDB", "search", error);
 	}

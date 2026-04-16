@@ -41,9 +41,16 @@ axiosRetry(anilist, {
 const SEARCH_ANIME_QUERY = `
 query SearchAnime($search: String!, $page: Int!, $perPage: Int!) {
   Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      hasNextPage
+    }
     media(search: $search, type: ANIME, sort: POPULARITY_DESC) {
       id
       isAdult
+      averageScore
+      popularity
+      episodes
+      duration
       title {
         english
         romaji
@@ -144,16 +151,35 @@ function sanitizeDescription(description: string | null): string | null {
 
 export async function searchAniListAnime(
 	query: string,
+	page = 1,
+	limit = SEARCH_PAGE_SIZE,
 	includeAdult = false,
 ) {
 	const cacheKey = `search:ANIME:${includeAdult ? "all" : "safe"}:${query
 		.toLowerCase()
-		.trim()}`;
+		.trim()}:${page}:${limit}`;
 	try {
 		const cachedResult = await cache.get(cacheKey);
 		if (cachedResult) {
 			console.log(`[CACHE HIT] Serving anime search "${query}" from Redis`);
-			return cachedResult;
+			if (Array.isArray(cachedResult)) {
+				return {
+					results: cachedResult,
+					hasNextPage: cachedResult.length > 0,
+				};
+			}
+			if (
+				typeof cachedResult === "object" &&
+				cachedResult !== null &&
+				Array.isArray((cachedResult as { results?: unknown }).results)
+			) {
+				return {
+					results: (cachedResult as { results: unknown[] }).results,
+					hasNextPage: Boolean(
+						(cachedResult as { hasNextPage?: boolean }).hasNextPage,
+					),
+				};
+			}
 		}
 
 		console.log(`[CACHE MISS] Fetching anime search "${query}" from AniList`);
@@ -161,13 +187,14 @@ export async function searchAniListAnime(
 			query: SEARCH_ANIME_QUERY,
 			variables: {
 				search: query,
-				page: 1,
-				perPage: SEARCH_PAGE_SIZE,
+				page,
+				perPage: limit,
 			},
 		});
 		assertAniListSuccess(response);
 
 		const rawResults: AniListSearchMedia[] = response.data?.data?.Page?.media || [];
+		const hasNextPage = Boolean(response.data?.data?.Page?.pageInfo?.hasNextPage);
 		const filteredResults = includeAdult
 			? rawResults
 			: rawResults.filter((media) => !media.isAdult);
@@ -179,11 +206,21 @@ export async function searchAniListAnime(
 			type: Type.ANIME,
 			poster_path: media.coverImage.large || media.coverImage.medium,
 			release_date: formatAniListDate(media.startDate),
+			community_rating: media.averageScore ? media.averageScore / 10 : null,
+			vote_count: null,
+			popularity: media.popularity ?? null,
+			total_episodes: media.episodes ?? null,
+			episode_runtime: media.duration ?? null,
 		}));
 
-		await cache.set(cacheKey, structuredResults, CACHE_TTL_SECONDS);
+		const payload = {
+			results: structuredResults,
+			hasNextPage,
+		};
 
-		return structuredResults;
+		await cache.set(cacheKey, payload, CACHE_TTL_SECONDS);
+
+		return payload;
 	} catch (error) {
 		throw toIntegrationError("ANILIST", "search", error);
 	}

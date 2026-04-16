@@ -13,6 +13,10 @@ export interface AniListDate {
 export interface AniListSearchMedia {
 	id: number;
 	isAdult: boolean;
+	averageScore: number | null;
+	popularity: number | null;
+	episodes: number | null;
+	duration: number | null;
 	title: AniListTitle;
 	coverImage: {
 		large: string | null;
