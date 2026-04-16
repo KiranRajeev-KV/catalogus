@@ -8,6 +8,13 @@ export interface MediaSearchResult {
 	type: MediaType;
 	poster_path: string | null;
 	release_date: string | null;
+	community_rating?: number | null;
+	vote_count?: number | null;
+	popularity?: number | null;
+	total_episodes?: number | null;
+	episode_runtime?: number | null;
+	inWatchlist?: boolean;
+	wishlistId?: string | null;
 }
 
 export interface MediaItem {

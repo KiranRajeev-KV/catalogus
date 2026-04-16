@@ -52,7 +52,7 @@ const useFilters = create<FiltersState>()(
 
 			q: undefined,
 			setSearchQuery: (query) => {
-				set({ q: query });
+				set({ page: 1, q: query });
 			},
 
 			type: undefined,

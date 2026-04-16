@@ -2,6 +2,7 @@
 import axios from "axios";
 import type { SortBy, StatusFilter } from "@/stores/filtersStore";
 import type { MediaType, MediaSearchResult } from "@/types/mediaItem";
+import type { WatchlistStatus } from "@/types/watchlistItem";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -14,18 +15,61 @@ const api = axios.create({
 
 export default api;
 
+export type ApiErrorCode =
+	| "VALIDATION_FAILED"
+	| "UNAUTHORIZED"
+	| "WATCHLIST_DUPLICATE"
+	| "PROVIDER_RATE_LIMITED"
+	| "PROVIDER_UNAVAILABLE"
+	| "PROVIDER_BAD_CONFIG"
+	| "PROVIDER_BAD_RESPONSE"
+	| "FALLBACK_ONLY_RESULTS"
+	| "INTERNAL_ERROR";
+
+export interface ApiErrorPayload {
+	code: ApiErrorCode;
+	message: string;
+	retryable: boolean;
+	provider?: "TMDB" | "ANILIST";
+	retryAttempts?: number | null;
+	retryAfterMs?: number | null;
+	suggestedBackoffMs?: number | null;
+	upstreamStatus?: number | null;
+	fallbackAvailable?: boolean;
+	details?: unknown;
+}
+
 export interface MediaSearchResponse {
-	results: MediaSearchResult[];
+	data: {
+		results: MediaSearchResult[];
+	} | null;
 	meta?: {
-		fallbackUsed?: boolean;
-		fallbackSource?: "LOCAL_DB";
-		warning?: string;
-		integration?: {
-			provider?: "TMDB" | "ANILIST";
-			retryable?: boolean;
-			retryAttempts?: number | null;
+		pagination?: {
+			limit: number;
+			nextCursor: string | null;
+			hasMore: boolean;
+		};
+		provider?: {
+			primary?: "TMDB" | "ANILIST";
+			servedBy?: "TMDB" | "ANILIST" | "LOCAL_DB";
+			fallbackUsed?: boolean;
+			fallbackSource?: "LOCAL_DB" | null;
+			fallbackReasonCode?: ApiErrorCode;
 		};
 	};
+	error: ApiErrorPayload | null;
+}
+
+export type AddWatchlistPayload = {
+	apiId: string;
+	type: MediaType;
+	status?: WatchlistStatus;
+	rating?: number;
+	comments?: string;
+};
+
+export interface AddWatchlistErrorResponse {
+	error?: ApiErrorPayload;
 }
 
 export async function fetchWatchlist(
@@ -35,6 +79,7 @@ export async function fetchWatchlist(
 	type?: MediaType,
 	sort?: SortBy,
 	q?: string,
+	signal?: AbortSignal,
 ) {
 	const response = await api.get("/watchlist", {
 		params: {
@@ -45,6 +90,7 @@ export async function fetchWatchlist(
 			sort: sort,
 			q: q,
 		},
+		signal,
 	});
 	return response.data;
 }
@@ -53,22 +99,24 @@ export async function searchMedia(
 	type: MediaType,
 	query: string,
 	includeAdult = false,
+	cursor?: string | null,
+	limit = 20,
+	signal?: AbortSignal,
 ): Promise<MediaSearchResponse> {
 	const response = await api.get("/media/search", {
 		params: {
-			type: type,
+			type,
 			q: query,
-			includeAdult: includeAdult,
+			includeAdult,
+			cursor: cursor || undefined,
+			limit,
 		},
+		signal,
 	});
 	return response.data;
 }
 
-export const addItemToWatchlist = async (data: {
-	apiId: string;
-	type: MediaType;
-	status: StatusFilter;
-}) => {
+export const addItemToWatchlist = async (data: AddWatchlistPayload) => {
 	const response = await api.post("/watchlist", data);
 	return response.data;
 };
