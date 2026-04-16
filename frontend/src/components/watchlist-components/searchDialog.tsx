@@ -1,5 +1,5 @@
-import axios from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import {
 	Clapperboard,
 	Film,
@@ -88,7 +88,9 @@ function formatRuntimeEpisodes(item: MediaSearchResult) {
 	return "-";
 }
 
-function getErrorCopy(error: ApiErrorPayload | null | undefined): SearchErrorState {
+function getErrorCopy(
+	error: ApiErrorPayload | null | undefined,
+): SearchErrorState {
 	if (!error) {
 		return {
 			title: "Search failed",
@@ -128,8 +130,7 @@ function getErrorCopy(error: ApiErrorPayload | null | undefined): SearchErrorSta
 		default:
 			return {
 				title: "Search unavailable",
-				message:
-					error.message || "We could not load search results right now.",
+				message: error.message || "We could not load search results right now.",
 				error,
 			};
 	}
@@ -150,7 +151,9 @@ export function WatchlistSearchModal({
 	const recentSearches = useSearchUiStore((state) => state.recentSearches);
 	const recentAdded = useSearchUiStore((state) => state.recentAdded);
 	const setLastTypePref = useSearchUiStore((state) => state.setLastType);
-	const setIncludeAdultPref = useSearchUiStore((state) => state.setIncludeAdult);
+	const setIncludeAdultPref = useSearchUiStore(
+		(state) => state.setIncludeAdult,
+	);
 	const setLastStatusPref = useSearchUiStore((state) => state.setLastStatus);
 	const pushRecentSearch = useSearchUiStore((state) => state.pushRecentSearch);
 	const pushRecentAdded = useSearchUiStore((state) => state.pushRecentAdded);
@@ -172,7 +175,10 @@ export function WatchlistSearchModal({
 	const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
 	const [addStatus, setAddStatus] = useState<WatchlistStatus>(lastStatusPref);
 
-	const resultKeys = useMemo(() => results.map((item) => keyFor(item)), [results]);
+	const resultKeys = useMemo(
+		() => results.map((item) => keyFor(item)),
+		[results],
+	);
 
 	const resetSearchState = () => {
 		setResults([]);
@@ -268,7 +274,9 @@ export function WatchlistSearchModal({
 			}
 
 			if (axios.isAxiosError(error)) {
-				const payload = error.response?.data?.error as ApiErrorPayload | undefined;
+				const payload = error.response?.data?.error as
+					| ApiErrorPayload
+					| undefined;
 				setSearchError(getErrorCopy(payload));
 			} else {
 				setSearchError(getErrorCopy(undefined));
@@ -279,6 +287,7 @@ export function WatchlistSearchModal({
 		}
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: deliberate debounced search wiring
 	useEffect(() => {
 		if (!open) return;
 		const trimmed = query.trim();
@@ -342,8 +351,7 @@ export function WatchlistSearchModal({
 				apiId: item.apiId,
 				title: item.title,
 				type: item.type,
-				apiSource:
-					item.apiSource === "ANILIST" ? "ANILIST" : "TMDB",
+				apiSource: item.apiSource === "ANILIST" ? "ANILIST" : "TMDB",
 			});
 			toast.success("Added to watchlist");
 			queryClient.invalidateQueries({ queryKey: ["watchlist"] });
@@ -352,7 +360,9 @@ export function WatchlistSearchModal({
 		},
 		onError: (error: unknown) => {
 			if (axios.isAxiosError(error)) {
-				const payload = error.response?.data?.error as ApiErrorPayload | undefined;
+				const payload = error.response?.data?.error as
+					| ApiErrorPayload
+					| undefined;
 				if (payload?.code === "WATCHLIST_DUPLICATE") {
 					toast.info("Already in your watchlist");
 				} else {
@@ -441,14 +451,25 @@ export function WatchlistSearchModal({
 		if (e.key === "ArrowUp") {
 			e.preventDefault();
 			if (!resultKeys.length) return;
-			setActiveIndex((prev) =>
-				prev <= 0 ? resultKeys.length - 1 : prev - 1,
-			);
+			setActiveIndex((prev) => (prev <= 0 ? resultKeys.length - 1 : prev - 1));
 			return;
 		}
 
 		if (e.key === "Enter") {
 			e.preventDefault();
+			if (activeIndex >= 0 && activeIndex < results.length) {
+				const selectedItem = results[activeIndex];
+				const selectedInWatchlist =
+					Boolean(selectedItem.inWatchlist) ||
+					addedLocal.has(keyFor(selectedItem));
+
+				if (selectedInWatchlist) {
+					removeFromWatchlist(selectedItem);
+				} else {
+					addToWatchlist(selectedItem);
+				}
+				return;
+			}
 			void runSearch({ append: false });
 		}
 	};
@@ -484,7 +505,9 @@ export function WatchlistSearchModal({
 						>
 							<SelectTrigger className="w-[136px] h-9 rounded-xl bg-muted/40 border-border/50">
 								<div className="flex items-center gap-2">
-									{type === "MOVIE" && <Film className="h-4 w-4 text-primary" />}
+									{type === "MOVIE" && (
+										<Film className="h-4 w-4 text-primary" />
+									)}
 									{type === "TV" && <Tv className="h-4 w-4 text-primary" />}
 									{type === "ANIME" && (
 										<Clapperboard className="h-4 w-4 text-primary" />
@@ -604,7 +627,9 @@ export function WatchlistSearchModal({
 							<p className="text-sm font-semibold text-destructive">
 								{searchError.title}
 							</p>
-							<p className="text-sm text-foreground/80 mt-1">{searchError.message}</p>
+							<p className="text-sm text-foreground/80 mt-1">
+								{searchError.message}
+							</p>
 							<div className="flex flex-wrap gap-2 mt-3">
 								<Button
 									size="sm"
@@ -632,7 +657,11 @@ export function WatchlistSearchModal({
 					)}
 
 					{results.length > 0 ? (
-						<div className="space-y-2 pb-4">
+						<div
+							className="space-y-2 pb-4"
+							role="listbox"
+							aria-label="Search results"
+						>
 							{results.map((item, index) => {
 								const rowKey = keyFor(item);
 								const inWatchlist =
@@ -645,6 +674,9 @@ export function WatchlistSearchModal({
 									<div
 										key={rowKey}
 										onMouseEnter={() => setActiveIndex(index)}
+										role="option"
+										aria-selected={isActive}
+										tabIndex={-1}
 										className={`w-full rounded-xl border px-3 py-3 text-left transition ${
 											isActive
 												? "border-primary/50 bg-primary/5"
@@ -685,12 +717,12 @@ export function WatchlistSearchModal({
 														{formatScore(item.community_rating)}
 													</span>
 													<span>{formatRuntimeEpisodes(item)}</span>
-													{typeof item.vote_count === "number" && item.vote_count > 0 && (
-														<span>{item.vote_count} votes</span>
-													)}
+													{typeof item.vote_count === "number" &&
+														item.vote_count > 0 && (
+															<span>{item.vote_count} votes</span>
+														)}
 												</div>
-
-										</div>
+											</div>
 
 											<div className="shrink-0">
 												<Button
@@ -728,7 +760,9 @@ export function WatchlistSearchModal({
 									<Button
 										variant="outline"
 										className="w-full"
-										onClick={() => void runSearch({ append: true, cursor: nextCursor })}
+										onClick={() =>
+											void runSearch({ append: true, cursor: nextCursor })
+										}
 										disabled={isLoadingMore || !nextCursor}
 									>
 										{isLoadingMore ? (
@@ -756,8 +790,12 @@ export function WatchlistSearchModal({
 								<Sparkles className="h-8 w-8" />
 							</div>
 							<div className="text-center space-y-1">
-								<p className="font-medium text-foreground">Search and add quickly</p>
-								<p className="text-sm">Use arrows + Enter to add without leaving keyboard.</p>
+								<p className="font-medium text-foreground">
+									Search and add quickly
+								</p>
+								<p className="text-sm">
+									Use arrows + Enter to add or remove the highlighted result.
+								</p>
 							</div>
 							{recentAdded.length > 0 && (
 								<>
