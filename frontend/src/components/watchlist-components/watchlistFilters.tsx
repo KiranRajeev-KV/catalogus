@@ -68,11 +68,11 @@ export function WatchlistFilters() {
 	}, [searchText, filters.setSearchQuery]);
 
 	return (
-		<div className="flex flex-row justify-between mb-3 py-2">
-			<div className="flex flex-row space-x-2 items-center">
+		<div className="mb-4 space-y-3 py-2">
+			<div className="flex flex-wrap items-center gap-2">
 				{/* Add to watchlist button */}
 				<WatchlistSearchModal>
-					<Button className="bg-primary rounded-lg shadow-xs w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
+					<Button className="bg-primary rounded-lg shadow-xs min-w-24 hover:scale-105 active:scale-[0.99] transition-all ease-in-out duration-150">
 						<Plus className="size-6 text-primary-foreground" />
 					</Button>
 				</WatchlistSearchModal>
@@ -95,10 +95,10 @@ export function WatchlistFilters() {
 							<motion.input
 								ref={inputRef}
 								initial={{ width: 0, opacity: 0 }}
-								animate={{ width: 300, opacity: 1 }}
+								animate={{ width: 280, opacity: 1 }}
 								exit={{ width: 0, opacity: 0 }}
 								transition={{ type: "spring", stiffness: 300, damping: 30 }}
-								className="bg-input ml-2 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:outline-none text-base text-foreground"
+								className="bg-input ml-2 shadow-xs rounded-lg px-2 py-1 border-input border h-9 focus:outline-none text-base text-foreground max-w-[70vw] sm:max-w-none"
 								autoFocus={true}
 								placeholder="Search..."
 								value={searchText}
@@ -108,35 +108,8 @@ export function WatchlistFilters() {
 					</AnimatePresence>
 				</div>
 			</div>
-
-			<div className="flex flex-row space-x-2 justify-center items-center">
-				{/* Type Filter */}
-				<ToggleGroup
-					type="single"
-					value={filters.type ?? ""}
-					className="border gap-0 max-h-9 shadow-xs border-input"
-				>
-					{[
-						{ label: "Movie", value: "MOVIE" },
-						{ label: "TV", value: "TV" },
-						{ label: "Anime", value: "ANIME" },
-					].map((item) => (
-						<ToggleGroupItem
-							key={item.value}
-							value={item.value}
-							className="w-18 px-3 text-base border-l first:border-l-0"
-							onClick={() => {
-								filters.setTypeFilter(
-									filters.type === item.value
-										? undefined
-										: (item.value as MediaType),
-								);
-							}}
-						>
-							{item.label}
-						</ToggleGroupItem>
-					))}
-				</ToggleGroup>
+			<div className="flex flex-wrap items-center gap-2 justify-between">
+				<div className="flex flex-wrap items-center gap-2">
 				{/* Status Dropdown */}
 				<Select
 					value={filters.status ?? "ALL"}
@@ -146,7 +119,7 @@ export function WatchlistFilters() {
 						);
 					}}
 				>
-					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
+					<SelectTrigger className="w-full min-w-[170px] sm:w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent className="text-base">
@@ -178,7 +151,7 @@ export function WatchlistFilters() {
 						filters.setSortBy(sort as SortBy);
 					}}
 				>
-					<SelectTrigger className="w-[180px] text-base shadow-xs rounded-lg text-foreground">
+					<SelectTrigger className="w-full min-w-[170px] sm:w-[180px] text-base shadow-xs rounded-lg text-foreground">
 						<SelectValue placeholder="Sort By" className="text-foreground" />
 					</SelectTrigger>
 					<SelectContent className="text-base">
@@ -208,7 +181,35 @@ export function WatchlistFilters() {
 						</SelectGroup>
 					</SelectContent>
 				</Select>
-
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					{/* Type Filter */}
+				<ToggleGroup
+					type="single"
+					value={filters.type ?? ""}
+					className="border gap-0 max-h-9 shadow-xs border-input min-w-0"
+				>
+					{[
+						{ label: "Movie", value: "MOVIE" },
+						{ label: "TV", value: "TV" },
+						{ label: "Anime", value: "ANIME" },
+					].map((item) => (
+						<ToggleGroupItem
+							key={item.value}
+							value={item.value}
+							className="px-3 text-base border-l first:border-l-0 min-w-[4.5rem]"
+							onClick={() => {
+								filters.setTypeFilter(
+									filters.type === item.value
+										? undefined
+										: (item.value as MediaType),
+								);
+							}}
+						>
+							{item.label}
+						</ToggleGroupItem>
+					))}
+				</ToggleGroup>
 				<ToggleGroup
 					type="single"
 					value={filters.viewMode}
@@ -237,6 +238,7 @@ export function WatchlistFilters() {
 						Table
 					</ToggleGroupItem>
 				</ToggleGroup>
+				</div>
 			</div>
 		</div>
 	);
