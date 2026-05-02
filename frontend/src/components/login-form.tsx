@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -22,6 +22,7 @@ export function LoginForm({ className }: React.ComponentProps<"div">) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -42,6 +43,7 @@ export function LoginForm({ className }: React.ComponentProps<"div">) {
 				onSuccess: () => {
 					setIsLoading(false);
 					toast.success("Welcome back!");
+					void navigate({ to: "/watchlist" });
 				},
 			},
 		);

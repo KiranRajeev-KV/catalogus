@@ -1,30 +1,34 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { MyNavbar } from "@/components/navbar";
-import { getAuthSession } from "@/lib/auth-server";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/_auth")({
-	beforeLoad: async ({ location }) => {
-		const authData = await getAuthSession();
-
-		if (!authData?.session) {
-			throw redirect({
-				to: "/signin",
-				search: {
-					redirect: location.href,
-				},
-			});
-		}
-
-		// 3. Return the full data so children can access 'user' info
-		return {
-			session: authData.session,
-			user: authData.user,
-		};
-	},
 	component: AuthLayout,
 });
 
 function AuthLayout() {
+	const navigate = useNavigate();
+	const { data, isPending } = authClient.useSession();
+
+	useEffect(() => {
+		if (!isPending && !data?.session) {
+			void navigate({ to: "/signin" });
+		}
+	}, [isPending, data?.session, navigate]);
+
+	if (isPending) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-background">
+				<p className="text-sm text-muted-foreground">Checking session...</p>
+			</div>
+		);
+	}
+
+	if (!data?.session) {
+		return null;
+	}
+
 	return (
 		<div className="min-h-screen bg-linear-to-b from-background via-background to-muted/20">
 			<MyNavbar />

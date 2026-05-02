@@ -1,4 +1,4 @@
-import { Link, useNavigate, } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -43,7 +43,7 @@ export function SignupForm({ className }: { className?: string }) {
 				},
 				onSuccess: () => {
 					toast.success("Account created successfully!");
-					navigate({to: "/watchlist"})
+					void navigate({ to: "/watchlist" });
 				},
 			},
 		);
