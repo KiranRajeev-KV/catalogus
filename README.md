@@ -57,10 +57,13 @@ DIRECT_URL=postgresql://postgres:newpassword@localhost:5432/catalogus
 
 BETTER_AUTH_SECRET=your-secret-key
 BETTER_AUTH_URL=http://localhost:8080
+FRONTEND_URL=http://localhost:3000
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 
 TMDB_API_KEY=your-tmdb-api-key
+ANILIST_API_URL=https://graphql.anilist.co
 
-REDIS_URL=redis://localhost:6379
+REDIS_URL=rediss://default:password@upstash-host:6379
 ```
 
 3. **Start infrastructure services**
@@ -94,6 +97,41 @@ cd frontend && pnpm dev
 ```
 
 App runs at `http://localhost:3000`
+
+## Deployment (Render + Vercel + Upstash)
+
+**Backend on Render (Web Service)**
+
+- Root Directory: `backend`
+- Build Command: `pnpm install --frozen-lockfile && pnpm build && npx prisma generate`
+- Pre-Deploy Command: `npx prisma migrate deploy`
+- Start Command: `pnpm start`
+
+Set these backend environment variables in Render:
+
+- `PORT`
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- `FRONTEND_URL`
+- `CORS_ORIGINS`
+- `TMDB_API_KEY`
+- `ANILIST_API_URL`
+- `REDIS_URL`
+
+Notes:
+- Use the Render Postgres internal URL for `DATABASE_URL` when backend and database are in the same Render region.
+- `DIRECT_URL` can match `DATABASE_URL` unless you need a separate direct connection URL.
+- Use Upstash's Redis-compatible TLS URL for `REDIS_URL` (typically `rediss://...`) because this app uses `ioredis`.
+
+**Frontend on Vercel**
+
+- Root Directory: `frontend`
+- Build Command: `pnpm install --frozen-lockfile && pnpm build`
+- Environment Variable: `VITE_API_BASE_URL=https://your-render-backend-url.onrender.com/api`
+
+Do not expose backend secrets in Vercel frontend environment variables.
 
 ## API Endpoints
 

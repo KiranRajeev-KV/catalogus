@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { getAllowedOrigins } from "./lib/origins.js";
 import authRoutes from "./routes/auth.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
 import watchlistRoutes from "./routes/watchlist.routes.js";
@@ -8,9 +9,25 @@ import watchlistRoutes from "./routes/watchlist.routes.js";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
+
+const allowedOrigins = new Set(getAllowedOrigins());
+
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: (origin, callback) => {
+			if (!origin) {
+				callback(null, true);
+				return;
+			}
+
+			if (allowedOrigins.has(origin)) {
+				callback(null, true);
+				return;
+			}
+
+			callback(new Error("CORS origin not allowed"));
+		},
 		credentials: true,
 	}),
 );

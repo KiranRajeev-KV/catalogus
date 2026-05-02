@@ -9,6 +9,9 @@ type AuthResponse = {
 	user: User;
 } | null;
 
+const apiBaseUrl =
+	import.meta.env.VITE_API_BASE_URL?.trim() || "http://localhost:8080/api";
+
 export const getAuthSession = createServerFn({ method: "GET" }).handler(
 	async (): Promise<AuthResponse> => {
 		const request = getRequest();
@@ -16,7 +19,7 @@ export const getAuthSession = createServerFn({ method: "GET" }).handler(
 
 		try {
 			const res = await api.get("/auth/get-session", {
-				baseURL: "http://localhost:8080/api",
+				baseURL: apiBaseUrl,
 				headers: {
 					Cookie: cookieHeader || "",
 				},
