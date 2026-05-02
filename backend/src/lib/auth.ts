@@ -28,6 +28,7 @@ export const auth = betterAuth({
       sameSite: "none",
       secure: true,
       httpOnly: true,
+	  partitioned: true
     },
   },
   plugins: [tanstackStartCookies()],
