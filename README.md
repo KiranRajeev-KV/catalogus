@@ -63,7 +63,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 TMDB_API_KEY=your-tmdb-api-key
 ANILIST_API_URL=https://graphql.anilist.co
 
-REDIS_URL=rediss://default:password@upstash-host:6379
+REDIS_URL=redis://localhost:6379
 ```
 
 3. **Start infrastructure services**
@@ -103,7 +103,7 @@ App runs at `http://localhost:3000`
 **Backend on Render (Web Service)**
 
 - Root Directory: `backend`
-- Build Command: `pnpm install --frozen-lockfile && pnpm build && npx prisma generate`
+- Build Command: `pnpm install --frozen-lockfile && npx prisma generate && pnpm build`
 - Pre-Deploy Command: `npx prisma migrate deploy`
 - Start Command: `pnpm start`
 
@@ -121,6 +121,7 @@ Set these backend environment variables in Render:
 - `REDIS_URL`
 
 Notes:
+- Prisma Client is generated before TypeScript compilation because backend source imports generated files from `src/generated/prisma`.
 - Use the Render Postgres internal URL for `DATABASE_URL` when backend and database are in the same Render region.
 - `DIRECT_URL` can match `DATABASE_URL` unless you need a separate direct connection URL.
 - Use Upstash's Redis-compatible TLS URL for `REDIS_URL` (typically `rediss://...`) because this app uses `ioredis`.
